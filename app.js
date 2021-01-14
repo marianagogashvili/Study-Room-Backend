@@ -21,11 +21,13 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 
 app.use((error, req, res, next) => {
-  console.log(error);
+  console.log(" Error" , error);
   const status = error.statusCode || 500;
   const message = error.message;
   const data = error.data;
-  res.status(status).json({ message: message, data: data });
+  // console.log({ message: message, data: data });
+
+  res.status(status).json(error);
 });
 
 mongoose
