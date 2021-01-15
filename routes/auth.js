@@ -1,6 +1,7 @@
 const express = require('express');
 const authController = require('../controllers/auth');
 const { body } = require('express-validator');
+const isAuth = require('../middleware/is-auth');
 
 const Student = require('../models/student');
 const Teacher = require('../models/teacher');
@@ -40,5 +41,8 @@ router.post('/login', [
  		.isLength({min: 3}).withMessage('Password is too short')
  		.not().isEmpty().withMessage('Password is empty') 		
  ],
-authController.login);
+ authController.login);
+
+// router.post('/checkUser', isAuth, authController.checkUser);
+
 module.exports = router;

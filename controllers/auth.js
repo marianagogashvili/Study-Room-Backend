@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const Mongoose = require('mongoose')
 
 const Student = require('../models/student');
 const Teacher = require('../models/teacher');
@@ -48,7 +49,6 @@ exports.register = async (req, res, next) => {
 }
 
 exports.login = async (req, res, next) => {
-	
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const error = new Error('Validation failed');
@@ -64,12 +64,16 @@ exports.login = async (req, res, next) => {
 		const teacher = await Teacher.findOne({login: login});
 
 		let user;
+		let type;
 		if (student) {
 			user = student;
+			type = 'student';
 		} else if (teacher) {
 			user = teacher;
+			type = 'teacher';
 		} else {
 			const error = new Error('This user does not exist');
+			error.data = [{ value: login, param: 'login', msg: 'This user does not exist'}];
 			error.statusCode = 401;
 			throw error;
 		}
@@ -77,6 +81,7 @@ exports.login = async (req, res, next) => {
 		const isEqual = await bcrypt.compare(password, user.password);
 		if (!isEqual) {
 			const error = new Error('Password is not correct');
+			error.data = [{ value: password, param: 'password', msg: 'Password is not correct'}];
 			error.statusCode = 401;
 			throw error;
 		} else {
@@ -84,15 +89,28 @@ exports.login = async (req, res, next) => {
 				login: login, id: user._id.toString()
 			}, 'somesecret', { expiresIn: '1h' });
 
-			res.status(200).json({ token: token, id: user._id.toString() });
-			return;
+			res.status(200).json({ token: token, id: user._id.toString(), type: type });
 		}
 	} catch(err) {
 		if (!err.statusCode) {
 	      err.statusCode = 500;
 	    }
 		next(err);
-		return err;
 	}
-
 }
+
+// exports.checkUser = async (req, res, next) => { 
+// 	const id = req.body.id;
+
+// 	let type = '';
+// 	const student = await Student.findById(Mongoose.Types.ObjectId(id));
+// 	const teacher = await Teacher.findById(Mongoose.Types.ObjectId(id));
+
+// 	if (student) {
+// 		res.status(200).json({ exists: true, type: 'student' });
+// 	} else if (teacher) {
+// 		res.status(200).json({ exists: true, type: 'teacher' });
+// 	} else {
+// 		res.status(200).json({ exists: false });		
+// 	}
+// }
