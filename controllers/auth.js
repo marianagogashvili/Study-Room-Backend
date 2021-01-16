@@ -86,10 +86,10 @@ exports.login = async (req, res, next) => {
 			throw error;
 		} else {
 			const token = jwt.sign({
-				login: login, id: user._id.toString()
+				login: login, id: user._id.toString(), type: type
 			}, 'somesecret', { expiresIn: '1h' });
 
-			res.status(200).json({ token: token, id: user._id.toString(), type: type });
+			res.status(200).json({ token: token, id: user._id.toString() });
 		}
 	} catch(err) {
 		if (!err.statusCode) {

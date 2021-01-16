@@ -1,17 +1,20 @@
 const Mongoose = require('mongoose');
-const Student = require('../models/student');
+const Teacher = require('../models/teacher');
+const bcrypt = require('bcryptjs');
+const { validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
 
-exports.getStudent = async (req, res, next) => {
+exports.getTeacher = async (req, res, next) => {
 	try {
-		const studentId = req.body.id;
-		const student = await Student.findById(Mongoose.Types.ObjectId(studentId));
-		if (!student) {
+		const teacherId = req.body.id;
+		const teacher = await Teacher.findById(Mongoose.Types.ObjectId(teacherId));
+		if (!teacher) {
 			const error = new Error();
 			error.statusCode = 404;
-			error.data  = 'This student does not exist';
+			error.data  = 'This teacher does not exist';
 			throw error;
 		} else {
-			res.status(201).json(student);
+			res.status(201).json(teacher);
 		}
 	} catch(err) {
 		if (!err.statusCode) {
@@ -21,7 +24,7 @@ exports.getStudent = async (req, res, next) => {
 	}
 }
 
-exports.editStudent = async (req, res, next) => {
+exports.editTeacher = async (req, res, next) => {
 	try {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
@@ -34,35 +37,33 @@ exports.editStudent = async (req, res, next) => {
 		const id = req.body.id;
 		const login = req.body.login;
 		const fullName = req.body.fullName;
-		const className = req.body.class;
 		const oldPassword = req.body.login;
 		const newPassword = req.body.login;
 
-		const student = await Student.findById(Mongoose.Types.ObjectId(id));
-		if (!student) {
+		const teacher = await Teacher.findById(Mongoose.Types.ObjectId(id));
+		if (!teacher) {
 			const error = new Error();
 			error.statusCode = 404;
-			error.data  = 'This student does not exist';
+			error.data  = 'This teacher does not exist';
 			throw error;
 		} else {
-			const passIsCorrect = await bcrypt.compare(oldPassword, student.password);
+			const passIsCorrect = await bcrypt.compare(oldPassword, teacher.password);
 			if (!passIsCorrect) {
 				const error = new Error();
 				error.statusCode = 422;
 				error.data  = 'Old password is incorrect';
 				throw error;
 			} else {
-				student.login = login;
-				student.fullName = fullName;
-				student.class = className;
-				student.password = newPassword;
-				const result = await student.save();
+				teacher.login = login;
+				teacher.fullName = fullName;
+				teacher.password = newPassword;
+				const result = await teacher.save();
 				if (result) {
-					res.status(200).json({message: 'Student was updated successfully'});
+					res.status(200).json({message: 'Teacher was updated successfully'});
 				} else {
 					const error = new Error();
 					error.statusCode = 404;
-					error.data  = 'Student was not updated';
+					error.data  = 'Teacher was not updated';
 					throw error;
 				}
 			}
@@ -74,3 +75,4 @@ exports.editStudent = async (req, res, next) => {
 		next(err);
 	}
 }
+

@@ -1,7 +1,6 @@
 const express = require('express');
 const authController = require('../controllers/auth');
 const { body } = require('express-validator');
-const isAuth = require('../middleware/is-auth');
 
 const Student = require('../models/student');
 const Teacher = require('../models/teacher');
@@ -20,7 +19,7 @@ router.post('/register',
 	 		const student = await Student.findOne({login: value});
 	 		const teacher = await Teacher.findOne({login: value});
 	 		if (student || teacher) {
-	 			const error = new Error('Login already exists');
+	 			const error = new Error('Login is already taken');
 	 			throw error;
 	 		}
 	 	}), 

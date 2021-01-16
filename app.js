@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const authRoutes = require('./routes/auth');
+const studentRoutes = require('./routes/student');
+const teacherRoutes = require('./routes/teacher');
 
 const app = express();
 app.use(bodyParser.json());
@@ -19,6 +21,8 @@ app.use((req, res, next) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/student', studentRoutes);
+app.use('/teacher', teacherRoutes);
 
 app.use((error, req, res, next) => {
   console.log(" Error" , error);
