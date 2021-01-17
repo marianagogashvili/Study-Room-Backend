@@ -56,16 +56,11 @@ exports.editTeacher = async (req, res, next) => {
 			} else {
 				teacher.login = login;
 				teacher.fullName = fullName;
-				teacher.password = newPassword;
+				const hashedPass = await bcrypt.hash(newPassword, 12);
+				teacher.password = hashedPass;
 				const result = await teacher.save();
-				if (result) {
-					res.status(200).json({message: 'Teacher was updated successfully'});
-				} else {
-					const error = new Error();
-					error.statusCode = 404;
-					error.data  = 'Teacher was not updated';
-					throw error;
-				}
+				res.status(200).json({message: 'Teacher was updated successfully'});
+				
 			}
 		}
 	} catch (err) {

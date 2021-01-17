@@ -27,18 +27,31 @@ exports.register = async (req, res, next) => {
 				login: login,
 				fullName: fullName,
 				password: hashedPassword,
-				class: className
+				class: className,
+				firstLogin: new Date(),
+				lastLogin: new Date()
 			});
 			const result = await student.save();
-			res.status(201).json({ message: 'Student created!', id: student._id });
+			const token = jwt.sign({
+				login: student.login, id: student._id.toString(), type: type
+			}, 'somesecret', { expiresIn: '1h' });
+
+			res.status(201).json({ message: 'Student created!', id: student._id, token: token, type: type });
 		} else if (type === 'teacher') {
 			const teacher = new Teacher({
 				login: login,
 				fullName: fullName,
-				password: hashedPassword
+				password: hashedPassword,
+				firstLogin: new Date(),
+				lastLogin: new Date()
 			});
 			const result = await teacher.save();
-			res.status(201).json({ message: 'Teacher created!', id: teacher._id });
+
+			const token = jwt.sign({
+				login: teacher.login, id: teacher._id.toString(), type: type
+			}, 'somesecret', { expiresIn: '1h' });
+
+			res.status(201).json({ message: 'Teacher created!', id: teacher._id, token: token, type: type });
 		}
 	} catch (err) {
 		if (!err.statusCode) {
@@ -85,11 +98,13 @@ exports.login = async (req, res, next) => {
 			error.statusCode = 401;
 			throw error;
 		} else {
+			user.lastLogin = new Date();
+			await user.save();
 			const token = jwt.sign({
 				login: login, id: user._id.toString(), type: type
 			}, 'somesecret', { expiresIn: '1h' });
 
-			res.status(200).json({ token: token, id: user._id.toString() });
+			res.status(200).json({ token: token, id: user._id.toString(), type: type });
 		}
 	} catch(err) {
 		if (!err.statusCode) {

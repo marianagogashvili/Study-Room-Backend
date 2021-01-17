@@ -4,7 +4,6 @@ module.exports = async (req, res, next) => {
 	try {
 		const token = req.get('Authorization').split(' ')[1];
 		const decodedToken = await jwt.verify(token, 'somesecret');
-		console.log(decodedToken);
 		if (!decodedToken) {
 			const error = new Error();
 			error.data = 'Not authenticated';

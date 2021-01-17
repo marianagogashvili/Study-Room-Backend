@@ -1,3 +1,6 @@
+const bcrypt = require('bcryptjs');
+const { validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
 const Mongoose = require('mongoose');
 const Student = require('../models/student');
 
@@ -22,6 +25,7 @@ exports.getStudent = async (req, res, next) => {
 }
 
 exports.editStudent = async (req, res, next) => {
+	console.log('HERE');
 	try {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
@@ -34,11 +38,12 @@ exports.editStudent = async (req, res, next) => {
 		const id = req.body.id;
 		const login = req.body.login;
 		const fullName = req.body.fullName;
-		const className = req.body.class;
-		const oldPassword = req.body.login;
-		const newPassword = req.body.login;
+		const oldPassword = req.body.oldPassword;
+		const newPassword = req.body.newPassword;
 
 		const student = await Student.findById(Mongoose.Types.ObjectId(id));
+		console.log(student);
+
 		if (!student) {
 			const error = new Error();
 			error.statusCode = 404;
@@ -54,17 +59,10 @@ exports.editStudent = async (req, res, next) => {
 			} else {
 				student.login = login;
 				student.fullName = fullName;
-				student.class = className;
-				student.password = newPassword;
+				const hashedPass = await bcrypt.hash(newPassword, 12);
+				student.password = hashedPass;
 				const result = await student.save();
-				if (result) {
-					res.status(200).json({message: 'Student was updated successfully'});
-				} else {
-					const error = new Error();
-					error.statusCode = 404;
-					error.data  = 'Student was not updated';
-					throw error;
-				}
+				res.status(200).json({message: 'Student was updated successfully', student: student});
 			}
 		}
 	} catch (err) {

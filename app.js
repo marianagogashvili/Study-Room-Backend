@@ -29,7 +29,7 @@ app.use((error, req, res, next) => {
   const status = error.statusCode || 500;
   // const message = error.message;
   const data = error.data;
-  // console.log(data);
+  console.log(data);
 
   res.status(status).json(data);
 });

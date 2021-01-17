@@ -15,13 +15,13 @@ router.put('/editStudent', [
 	body('login')
 		.not().isEmpty().withMessage('Login is empty')
 		.custom(async (value, { req }) => {
-			const student = await Student.find({login: value});
-			if (student) {
+			const students = await Student.find({login: value});
+			if (students.length >= 2) {
 				const error = new Error('Login is already taken');
 				throw error;
 			}
 	}),
-	body('class').not().isEmpty().withMessage('Class is empty'),
+	// body('class').not().isEmpty().withMessage('Class is empty'),
 	body('oldPassword').not().isEmpty().withMessage('Old password field is empty'),
 	body('newPassword').not().isEmpty().withMessage('Password is empty'),
 
