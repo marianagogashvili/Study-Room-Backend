@@ -34,7 +34,7 @@ exports.register = async (req, res, next) => {
 			const result = await student.save();
 			const token = jwt.sign({
 				login: student.login, id: student._id.toString(), type: type
-			}, 'somesecret', { expiresIn: '1h' });
+			}, 'somesecret', { expiresIn: '24h' });
 
 			res.status(201).json({ message: 'Student created!', id: student._id, token: token, type: type });
 		} else if (type === 'teacher') {
@@ -49,7 +49,7 @@ exports.register = async (req, res, next) => {
 
 			const token = jwt.sign({
 				login: teacher.login, id: teacher._id.toString(), type: type
-			}, 'somesecret', { expiresIn: '1h' });
+			}, 'somesecret', { expiresIn: '24h' });
 
 			res.status(201).json({ message: 'Teacher created!', id: teacher._id, token: token, type: type });
 		}
@@ -102,7 +102,7 @@ exports.login = async (req, res, next) => {
 			await user.save();
 			const token = jwt.sign({
 				login: login, id: user._id.toString(), type: type
-			}, 'somesecret', { expiresIn: '1h' });
+			}, 'somesecret', { expiresIn: '24h' });
 
 			res.status(200).json({ token: token, id: user._id.toString(), type: type });
 		}

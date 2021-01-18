@@ -25,7 +25,6 @@ exports.getStudent = async (req, res, next) => {
 }
 
 exports.editStudent = async (req, res, next) => {
-	console.log('HERE');
 	try {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
@@ -37,12 +36,20 @@ exports.editStudent = async (req, res, next) => {
 
 		const id = req.body.id;
 		const login = req.body.login;
+
+		const checkLogin = await Student.findOne({login:login});
+		if (checkLogin !== null && checkLogin.id.toString() !== id) {
+			const error = new Error();
+			error.statusCode = 404;
+			error.data  = [{param: 'login', msg:'Login is already taken'}];
+			throw error;
+		}
+
 		const fullName = req.body.fullName;
 		const oldPassword = req.body.oldPassword;
 		const newPassword = req.body.newPassword;
 
 		const student = await Student.findById(Mongoose.Types.ObjectId(id));
-		console.log(student);
 
 		if (!student) {
 			const error = new Error();
@@ -54,7 +61,7 @@ exports.editStudent = async (req, res, next) => {
 			if (!passIsCorrect) {
 				const error = new Error();
 				error.statusCode = 422;
-				error.data  = 'Old password is incorrect';
+				error.data  = [{ param: 'oldPassword', msg: 'Old password is incorrect'}];
 				throw error;
 			} else {
 				student.login = login;
@@ -72,3 +79,4 @@ exports.editStudent = async (req, res, next) => {
 		next(err);
 	}
 }
+

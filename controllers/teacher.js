@@ -36,12 +36,22 @@ exports.editTeacher = async (req, res, next) => {
 
 		const id = req.body.id;
 		const login = req.body.login;
+
+		const checkLogin = await Teacher.findOne({login:login});
+		if (checkLogin !== null && checkLogin.id.toString() !== id) {
+			const error = new Error();
+			error.statusCode = 404;
+			error.data  = [{param: 'login', msg:'Login is already taken'}];
+			throw error;
+		}
+
 		const fullName = req.body.fullName;
-		const oldPassword = req.body.login;
-		const newPassword = req.body.login;
+		const oldPassword = req.body.oldPassword;
+		const newPassword = req.body.newPassword;
 
 		const teacher = await Teacher.findById(Mongoose.Types.ObjectId(id));
-		if (!teacher) {
+		
+		if (!teacher) {       
 			const error = new Error();
 			error.statusCode = 404;
 			error.data  = 'This teacher does not exist';
@@ -51,7 +61,7 @@ exports.editTeacher = async (req, res, next) => {
 			if (!passIsCorrect) {
 				const error = new Error();
 				error.statusCode = 422;
-				error.data  = 'Old password is incorrect';
+				error.data  = [{ param: 'oldPassword', msg: 'Old password is incorrect'}];
 				throw error;
 			} else {
 				teacher.login = login;
@@ -64,6 +74,7 @@ exports.editTeacher = async (req, res, next) => {
 			}
 		}
 	} catch (err) {
+		console.log(err);
 		if (!err.statusCode) {
 	      err.statusCode = 500;
 	    }
