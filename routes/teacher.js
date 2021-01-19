@@ -18,5 +18,7 @@ router.put('/editTeacher', [
 
 ], isAuth, teacherController.editTeacher);
 
+router.post('/findStudent', isAuth, teacherController.findStudent);
+
 
 module.exports = router;

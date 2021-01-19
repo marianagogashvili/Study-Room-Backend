@@ -14,10 +14,11 @@ const studentSchema = new Schema({
 		type: String,
 		required: true
 	},
-	class: {
-		type: String,
-		required: true
-	},
+	group: {
+        type: Schema.Types.ObjectId,
+        ref: 'Group',
+        required: true
+    },
 	firstLogin: {
 		type: Date,
 		default: new Date(),

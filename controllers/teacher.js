@@ -3,6 +3,7 @@ const Teacher = require('../models/teacher');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const Student = require('../models/student');
 
 exports.getTeacher = async (req, res, next) => {
 	try {
@@ -75,6 +76,20 @@ exports.editTeacher = async (req, res, next) => {
 		}
 	} catch (err) {
 		console.log(err);
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
+exports.findStudent = async (req, res, next) => {
+	try {
+		const name = req.body.name;
+		let student = {};
+		student = await Student.find({'fullName': {$regex:  name , $options: "i"}}).limit(5);
+		res.status(201).json(student);
+	} catch (err) {
 		if (!err.statusCode) {
 	      err.statusCode = 500;
 	    }

@@ -5,6 +5,7 @@ const Mongoose = require('mongoose')
 
 const Student = require('../models/student');
 const Teacher = require('../models/teacher');
+const Group = require('../models/group');
 
 exports.register = async (req, res, next) => {
 	try {
@@ -18,19 +19,29 @@ exports.register = async (req, res, next) => {
 		const login = req.body.login;
 		const fullName = req.body.fullName;
 		const type = req.body.type;
-		const className = req.body.className;
+		const groupId = req.body.groupId;
+
 		const password = req.body.password;
 
 		const hashedPassword = await bcrypt.hash(password, 12);
+
 		if (type === 'student') {
+			const group = await Group.findById(groupId);
+			if (!group) {
+				const error = new Error();
+				error.data = [{ param: 'className', msg: 'This group does not exist'}];
+				error.statusCode = 401;
+				throw error;
+			}
 			const student = new Student({
 				login: login,
 				fullName: fullName,
 				password: hashedPassword,
-				class: className,
+				group: group,
 				firstLogin: new Date(),
 				lastLogin: new Date()
 			});
+
 			const result = await student.save();
 			const token = jwt.sign({
 				login: student.login, id: student._id.toString(), type: type

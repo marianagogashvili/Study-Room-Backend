@@ -19,6 +19,4 @@ router.put('/editStudent', [
 
 ], isAuth, studentController.editStudent);
 
-
-
 module.exports = router;

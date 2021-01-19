@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/student');
 const teacherRoutes = require('./routes/teacher');
+const groupRoutes = require('./routes/group');
 
 const app = express();
 app.use(bodyParser.json());
@@ -23,6 +24,8 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 app.use('/student', studentRoutes);
 app.use('/teacher', teacherRoutes);
+app.use('/group', groupRoutes);
+
 
 app.use((error, req, res, next) => {
   console.log(" Error" , error);
