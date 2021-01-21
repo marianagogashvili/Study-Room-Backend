@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Group  = require('./group');
 const Schema = mongoose.Schema;
 
 const studentSchema = new Schema({

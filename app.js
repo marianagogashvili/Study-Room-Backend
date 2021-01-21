@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/student');
 const teacherRoutes = require('./routes/teacher');
 const groupRoutes = require('./routes/group');
+const courseRoutes = require('./routes/course');
 
 const app = express();
 app.use(bodyParser.json());
@@ -25,6 +26,7 @@ app.use('/auth', authRoutes);
 app.use('/student', studentRoutes);
 app.use('/teacher', teacherRoutes);
 app.use('/group', groupRoutes);
+app.use('/course', courseRoutes);
 
 
 app.use((error, req, res, next) => {
@@ -39,7 +41,12 @@ app.use((error, req, res, next) => {
 
 mongoose
 	.connect(
-		'mongodb+srv://mariana:mari2003@cluster0.hfkls.mongodb.net/study-room', {useUnifiedTopology: true, useNewUrlParser: true}
+		'mongodb+srv://mariana:mari2003@cluster0.hfkls.mongodb.net/study-room', {
+      useFindAndModify: false,
+      useCreateIndex: true,
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+    }
 	)
 	.then(result => {
 		app.listen(8000);

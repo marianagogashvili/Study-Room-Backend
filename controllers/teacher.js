@@ -8,7 +8,7 @@ const Student = require('../models/student');
 exports.getTeacher = async (req, res, next) => {
 	try {
 		const teacherId = req.body.id;
-		const teacher = await Teacher.findById(Mongoose.Types.ObjectId(teacherId));
+		const teacher = await Teacher.findById(Mongoose.Types.ObjectId(teacherId)).populate('courses');
 		if (!teacher) {
 			const error = new Error();
 			error.statusCode = 404;
@@ -87,7 +87,7 @@ exports.findStudent = async (req, res, next) => {
 	try {
 		const name = req.body.name;
 		let student = {};
-		student = await Student.find({'fullName': {$regex:  name , $options: "i"}}).limit(5);
+		student = await Student.find({'fullName': {$regex:  name , $options: "i"}}).limit(5).populate('group');
 		res.status(201).json(student);
 	} catch (err) {
 		if (!err.statusCode) {
