@@ -7,6 +7,7 @@ const studentRoutes = require('./routes/student');
 const teacherRoutes = require('./routes/teacher');
 const groupRoutes = require('./routes/group');
 const courseRoutes = require('./routes/course');
+const topicRoutes = require('./routes/topic');
 
 const app = express();
 app.use(bodyParser.json());
@@ -27,6 +28,7 @@ app.use('/student', studentRoutes);
 app.use('/teacher', teacherRoutes);
 app.use('/group', groupRoutes);
 app.use('/course', courseRoutes);
+app.use('/topic', topicRoutes);
 
 
 app.use((error, req, res, next) => {

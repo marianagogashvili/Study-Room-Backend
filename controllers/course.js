@@ -84,3 +84,45 @@ exports.getCourse = async (req, res, next) => {
 		next(err);
 	}
 };
+
+exports.editCourse = async (req, res, next) => {
+	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			const error = new Error('Validation failed.');
+			error.statusCode = 422;
+			error.data = errors.array();
+			throw error;
+		}
+		const id = req.body.id;
+		const title = req.body.title;
+		const key = req.body.key;
+		const description = req.body.description;
+
+		const course = await Course.findById(id);
+		if (!course) {
+			const err = new Error();
+			err.status = 404;
+			err.data = 'This course does not exist';
+			throw err;
+		}
+		if (course.creator === id) {
+			course.title = title;
+			course.key = key;
+			course.description = description;
+			await course.save();
+		} else {
+			const err = new Error();
+			err.status = 404;
+			err.data = 'Permission denied';
+			throw err;
+		}
+		// const result = await Course.findByIdAndUpdate(id, {title: title, key: key, description: description});
+		res.status(200).json({message: "Course was updated successfully"}); 
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}

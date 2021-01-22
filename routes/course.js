@@ -19,4 +19,12 @@ router.post('/createCourse', [
 	body('key').not().isEmpty().withMessage('Key is empty')	 
 ], isAuthTeacher, courseController.createCourse);
 
+router.put('/editCourse',  [
+	body('title').not().isEmpty().withMessage('Title is empty')
+				 .isLength({min: 3}).withMessage('Title is too short'),
+	body('description').not().isEmpty().withMessage('Description is empty')
+				 .isLength({min: 3}).withMessage('Description is too short'),
+	body('key').not().isEmpty().withMessage('Key is empty')	 
+], isAuthTeacher, courseController.editCourse);
+
 module.exports = router;
