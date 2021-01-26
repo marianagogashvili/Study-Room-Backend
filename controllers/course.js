@@ -95,6 +95,7 @@ exports.editCourse = async (req, res, next) => {
 			throw error;
 		}
 		const id = req.body.id;
+		const teacherId = req.body.teacherId;
 		const title = req.body.title;
 		const key = req.body.key;
 		const description = req.body.description;
@@ -106,7 +107,8 @@ exports.editCourse = async (req, res, next) => {
 			err.data = 'This course does not exist';
 			throw err;
 		}
-		if (course.creator === id) {
+		
+		if (course.creator.toString() === teacherId) {
 			course.title = title;
 			course.key = key;
 			course.description = description;
@@ -117,8 +119,67 @@ exports.editCourse = async (req, res, next) => {
 			err.data = 'Permission denied';
 			throw err;
 		}
-		// const result = await Course.findByIdAndUpdate(id, {title: title, key: key, description: description});
+		const result = await Course.findByIdAndUpdate(id, {title: title, key: key, description: description});
 		res.status(200).json({message: "Course was updated successfully"}); 
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
+exports.getStudents = async (req, res, next) => {
+	try {
+		const id = req.body.id;
+		const students = await Course.findById(Mongoose.Types.ObjectId(id)).populate({ path: 'students', populate: { path: 'group' }});
+
+		res.status(200).json(students); 
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
+exports.deleteStudent = async (req, res, next) => {
+	try {
+		const studentId = req.body.studentId.toString() ;
+		const courseId = req.body.courseId.toString() ;
+
+		const student = await Student.findById(Mongoose.Types.ObjectId(studentId));
+		if (!student) {
+			const err = new Error();
+			err.status = 404;
+			err.data = 'This student does not exist';
+			throw err;
+		}
+
+		const course = await Course.findById(Mongoose.Types.ObjectId(courseId));
+		if (!course) {
+			const err = new Error();
+			err.status = 404;
+			err.data = 'This course does not exist';
+			throw err;
+		}
+		console.log(student);
+		console.log(course);
+
+		// Student.findOneAndUpdate({_id: Mongoose.Types.ObjectId(studentId)}, { $pull: { courses: { _id: Mongoose.Types.ObjectId(courseId) } } }, function(err, data){
+		//   console.log(err, data);
+		// });
+		// Course.findOneAndUpdate({_id: Mongoose.Types.ObjectId(courseId)}, { $pull: { students: { _id: Mongoose.Types.ObjectId(studentId) } } }, function(err, data){
+		//   console.log(err, data);
+		// });
+		// Student.findOneAndUpdate({_id: Mongoose.Types.ObjectId(studentId)}, { $pull: { courses: { _id: Mongoose.Types.ObjectId(courseId) } } }, function(err, data){
+		//   console.log(err, data);
+		// });
+		// Course.findOneAndUpdate({_id: Mongoose.Types.ObjectId(courseId)}, { $pull: { students: { _id: Mongoose.Types.ObjectId(studentId) } } }, function(err, data){
+		//   console.log(err, data);
+		// });
+
+		res.status(200).json({message: "Student was removed from course"});
 	} catch (err) {
 		if (!err.statusCode) {
 	      err.statusCode = 500;

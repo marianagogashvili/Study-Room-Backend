@@ -70,7 +70,7 @@ exports.editTeacher = async (req, res, next) => {
 				const hashedPass = await bcrypt.hash(newPassword, 12);
 				teacher.password = hashedPass;
 				const result = await teacher.save();
-				res.status(200).json({message: 'Teacher was updated successfully'});
+				res.status(200).json({message: 'Teacher was updated successfully', teacher: teacher});
 				
 			}
 		}

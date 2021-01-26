@@ -27,4 +27,8 @@ router.put('/editCourse',  [
 	body('key').not().isEmpty().withMessage('Key is empty')	 
 ], isAuthTeacher, courseController.editCourse);
 
+router.post('/getStudentsOfCourse', isAuthTeacher, courseController.getStudents);
+
+router.post('/deleteStudentFromCourse', isAuthTeacher, courseController.deleteStudent);
+
 module.exports = router;
