@@ -31,4 +31,8 @@ router.post('/getStudentsOfCourse', isAuthTeacher, courseController.getStudents)
 
 router.post('/deleteStudentFromCourse', isAuthTeacher, courseController.deleteStudent);
 
-module.exports = router;
+router.post('/findStudentsByParams', isAuthTeacher, courseController.findStudentsByParams);
+
+router.post('/addStudents', isAuthTeacher, courseController.addStudents);
+
+module.exports = router; 

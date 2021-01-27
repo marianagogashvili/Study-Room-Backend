@@ -107,7 +107,7 @@ exports.editCourse = async (req, res, next) => {
 			err.data = 'This course does not exist';
 			throw err;
 		}
-		
+
 		if (course.creator.toString() === teacherId) {
 			course.title = title;
 			course.key = key;
@@ -166,18 +166,10 @@ exports.deleteStudent = async (req, res, next) => {
 		console.log(student);
 		console.log(course);
 
-		// Student.findOneAndUpdate({_id: Mongoose.Types.ObjectId(studentId)}, { $pull: { courses: { _id: Mongoose.Types.ObjectId(courseId) } } }, function(err, data){
-		//   console.log(err, data);
-		// });
-		// Course.findOneAndUpdate({_id: Mongoose.Types.ObjectId(courseId)}, { $pull: { students: { _id: Mongoose.Types.ObjectId(studentId) } } }, function(err, data){
-		//   console.log(err, data);
-		// });
-		// Student.findOneAndUpdate({_id: Mongoose.Types.ObjectId(studentId)}, { $pull: { courses: { _id: Mongoose.Types.ObjectId(courseId) } } }, function(err, data){
-		//   console.log(err, data);
-		// });
-		// Course.findOneAndUpdate({_id: Mongoose.Types.ObjectId(courseId)}, { $pull: { students: { _id: Mongoose.Types.ObjectId(studentId) } } }, function(err, data){
-		//   console.log(err, data);
-		// });
+		await student.courses.pull(courseId);
+		await student.save();
+		await course.students.pull(studentId);
+		await course.save();
 
 		res.status(200).json({message: "Student was removed from course"});
 	} catch (err) {
@@ -186,4 +178,54 @@ exports.deleteStudent = async (req, res, next) => {
 	    }
 		next(err);
 	}
+}
+
+exports.findStudentsByParams = async (req, res, next) => {
+	const fullName = req.body.fullName;
+	const login = req.body.login;
+	const groupVal = req.body.group;
+
+	let students = [];
+	if (fullName !== '' || login !== '') {
+		students = await Student.find().populate('group')
+		.and([
+	      { 'fullName': {$regex: fullName , $options: "i"} },
+	      { 'login': {$regex: login, $options: "i"} }
+	    ]);
+	}
+
+	let result;
+    if (students.length !== 0) {
+    	if (groupVal !== '') {
+    		result = students.filter(stud => stud.group.name == groupVal);
+    	} else {
+    		result = students;
+    	}
+    } else if (students.length === 0) {
+    	const group = await Group.findOne({name: groupVal});
+ 	    result = await Student.find({group: group._id}).populate('group');
+    } 
+	res.status(200).json(result);
+}
+
+exports.addStudents = async (req, res, next) => {
+	const course = await Course.findById(req.body.courseId);
+	if (!course) {
+		const err = new Error();
+		err.status = 404;
+		err.data = 'This course does not exist';
+		throw err;
+	}
+	const students = req.body.students;
+
+	if (students.length !== []) {
+		students.forEach(async (s) => {
+			course.students.push(s);
+			await Student.findByIdAndUpdate(s._id, { $push: { courses: course } });
+		});
+	}
+
+	await course.save();
+	res.status(201).json({message: "Students added successfully"});
+
 }
