@@ -184,48 +184,80 @@ exports.findStudentsByParams = async (req, res, next) => {
 	const fullName = req.body.fullName;
 	const login = req.body.login;
 	const groupVal = req.body.group;
+	const courseId = req.body.courseId;
 
 	let students = [];
-	if (fullName !== '' || login !== '') {
-		students = await Student.find().populate('group')
-		.and([
-	      { 'fullName': {$regex: fullName , $options: "i"} },
-	      { 'login': {$regex: login, $options: "i"} }
-	    ]);
-	}
+	let group = '';
 
-	let result;
-    if (students.length !== 0) {
-    	if (groupVal !== '') {
-    		result = students.filter(stud => stud.group.name == groupVal);
-    	} else {
-    		result = students;
-    	}
-    } else if (students.length === 0) {
-    	const group = await Group.findOne({name: groupVal});
- 	    result = await Student.find({group: group._id}).populate('group');
-    } 
-	res.status(200).json(result);
+	if (fullName !== '' || login !== '' || groupVal !== '') {
+		let group = await Group.findOne({name: groupVal});
+
+		students = await Student.find().populate('group')
+			.and([
+		      { 'fullName': {$regex: fullName , $options: "i"} },
+		      { 'login': {$regex: login, $options: "i"} },
+		      { 'courses': { $ne: courseId } },
+		      group ? { 'group': group._id } : {}
+		    ]);
+	}
+	res.status(200).json(students);
 }
 
 exports.addStudents = async (req, res, next) => {
-	const course = await Course.findById(req.body.courseId);
-	if (!course) {
-		const err = new Error();
-		err.status = 404;
-		err.data = 'This course does not exist';
-		throw err;
-	}
-	const students = req.body.students;
+	try {
+		const course = await Course.findById(req.body.courseId);
+		if (!course) {
+			const err = new Error();
+			err.status = 404;
+			err.data = 'This course does not exist';
+			throw err;
+		}
+		const students = req.body.students;
 
-	if (students.length !== []) {
-		students.forEach(async (s) => {
-			course.students.push(s);
-			await Student.findByIdAndUpdate(s._id, { $push: { courses: course } });
+		if (students.length !== []) {
+			students.forEach(async (s) => {
+				course.students.push(s);
+				await Student.findByIdAndUpdate(s._id, { $push: { courses: course } });
+			});
+		}
+
+		await course.save();
+		res.status(201).json({message: "Students added successfully"});
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+	
+
+}
+
+exports.deleteStudents = async (req, res, next) => {
+	try {
+		const courseId = req.body.courseId;
+		const course = await Course.findById(courseId);
+		if (!course) {
+			const err = new Error();
+			err.status = 404;
+			err.data = 'This course does not exist';
+			throw err;
+		}
+		course.students.forEach(async (studentId) => {
+			const student = await Student.findById(studentId);
+
+			await student.courses.pull(courseId);
+			await student.save();
 		});
-	}
 
-	await course.save();
-	res.status(201).json({message: "Students added successfully"});
+		course.students = [];
+		await course.save();
+		res.status(200).json({message: "Students deleted"});
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
 
 }
