@@ -31,10 +31,16 @@ router.post('/getStudentsOfCourse', isAuthTeacher, courseController.getStudents)
 
 router.post('/deleteStudentFromCourse', isAuthTeacher, courseController.deleteStudent);
 
-router.post('/findStudentsByParams', isAuthTeacher, courseController.findStudentsByParams);
+router.post('/findStudentsByParams', [
+	body('login').trim(),
+	body('fullName').trim(),
+	body('group').trim()
+], isAuthTeacher, courseController.findStudentsByParams);
 
 router.post('/addStudents', isAuthTeacher, courseController.addStudents);
 
 router.post('/deleteStudents', isAuthTeacher, courseController.deleteStudents);
+
+router.post('/deleteCourse', isAuthTeacher, courseController.deleteCourse);
 
 module.exports = router; 

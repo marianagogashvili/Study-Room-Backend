@@ -259,5 +259,30 @@ exports.deleteStudents = async (req, res, next) => {
 	    }
 		next(err);
 	}
+}
 
+exports.deleteCourse = async (req, res, next) => {
+	try {
+
+		const course = await Course.findById(req.body.id);
+		if (!course) {
+			const err = new Error();
+			err.status = 404;
+			err.data = 'This course does not exist';
+			throw err;
+		}
+		course.students.forEach(async (studentId) => {
+			const student = await Student.findById(studentId);
+
+			await student.courses.pull(course._id);
+			await student.save();
+		});
+		await Course.deleteOne({ _id: course._id });
+		res.status(200).json({message: "Course deleted"});
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
 }
