@@ -11,6 +11,10 @@ const topicSchema = Schema({
 		required: true,
 		default: false
 	},
+	num: {
+		type: Number,
+		required: true,
+	},
 	course: {
 		type: Schema.Types.ObjectId,
         ref: 'Course',

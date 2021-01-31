@@ -5,9 +5,18 @@ const Course = require("../models/course");
 
 exports.createTopic = async (req, res, next) => {
 	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			const error = new Error();
+			error.statusCode = 422;
+			error.data  = errors.array();
+			throw error;
+		}
+		
 		const courseId = req.body.courseId;
 		const title = req.body.title;
 		const hidden = req.body.hidden;
+		const beforeTopic = req.body.beforeTopic;
 
 		const course = await Course.findById(courseId);
 		if (!course) {
@@ -16,14 +25,33 @@ exports.createTopic = async (req, res, next) => {
 			error.data  = 'This course does not exist';
 			throw error;
 		}
-		const topic = new Topic({
-			title: title,
-			hidden: hidden,
-			course: courseId
-		});
 
-		await topic.save();
-		res.status(201).json(topic);
+		if (!beforeTopic) {
+			let numberOfTopics = await Topic.countDocuments({course: courseId});
+			const num = numberOfTopics + 1;
+			const topic = new Topic({
+				title: title,
+				hidden: hidden,
+				course: courseId,
+				num: num
+			});
+			await topic.save();
+			res.status(201).json(topic);
+		} else {
+
+			const topic = new Topic({
+				title: title,
+				hidden: hidden,
+				course: courseId,
+				num: beforeTopic
+			});
+			await Topic.updateMany({num: {$gte: beforeTopic}}, { $inc: { num: 1 } } );
+
+			await topic.save();
+
+			res.status(201).json(topic);
+		}
+		
 	} catch (err) {
 		console.log(err);
 		if (!err.statusCode) {
@@ -37,7 +65,7 @@ exports.createTopic = async (req, res, next) => {
 exports.getTopics = async (req, res, next) => {
 	try {
 		const courseId = req.body.courseId;
-		const topics = await Topic.find({course: courseId});
+		const topics = await Topic.find({course: courseId}).sort({ num: 'asc'});
 		res.status(200).json(topics);
 
 	} catch (err) {
@@ -65,10 +93,10 @@ exports.editTopic = async (req, res, next) => {
 		}
 		topic.title = title;
 		topic.hidden = hidden;
-		
+
 		await topic.save()
 
-		res.status(201).json({message: "Topic updated"});
+		res.status(201).json(topic);
 	} catch (err) {
 		console.log(err);
 		if (!err.statusCode) {
@@ -80,7 +108,12 @@ exports.editTopic = async (req, res, next) => {
 exports.deleteTopic = async (req, res, next) => {
 	try {
 		const topicId = req.body.id;
+		const topic = await Topic.findById(topicId);
+		const number = topic.num;
+
 		await Topic.deleteOne({_id: topicId});
+		await Topic.updateMany({num: {$gt: number}}, { $inc: { num: -1 } } );
+
 		res.status(201).json({message: "Topic deleted"});
 	} catch (err) {
 		console.log(err);

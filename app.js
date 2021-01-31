@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const multer = require('multer');
 
 const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/student');
@@ -8,10 +9,32 @@ const teacherRoutes = require('./routes/teacher');
 const groupRoutes = require('./routes/group');
 const courseRoutes = require('./routes/course');
 const topicRoutes = require('./routes/topic');
+const assignmentRoutes = require('./routes/assignment');
 
 const app = express();
 app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded())
+
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'assignmentsFolder')
+  },
+  fileName: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf' || 
+      file.mimetype === 'application/msword') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+}
+
+app.use(
+  multer({storage: fileStorage, fileFilter: fileFilter}).single('file')
+ );
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -29,6 +52,7 @@ app.use('/teacher', teacherRoutes);
 app.use('/group', groupRoutes);
 app.use('/course', courseRoutes);
 app.use('/topic', topicRoutes);
+app.use('/assignment', assignmentRoutes);
 
 
 app.use((error, req, res, next) => {
