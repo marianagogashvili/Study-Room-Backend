@@ -8,4 +8,6 @@ const isAuth = require('../middleware/is-auth-teacher');
 
 router.post('/createAssignment', isAuth, assignmentController.createAssignment);
 
+router.post('/getAssignmentsByCourse', isAuth, assignmentController.getByCourse);
+
 module.exports = router;

@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const path = require('path');
 
 const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/student');
@@ -13,28 +14,7 @@ const assignmentRoutes = require('./routes/assignment');
 
 const app = express();
 app.use(bodyParser.json());
-
-const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'assignmentsFolder')
-  },
-  fileName: (req, file, cb) => {
-    cb(null, new Date().toISOString() + '-' + file.originalname);
-  }
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'application/pdf' || 
-      file.mimetype === 'application/msword') {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-}
-
-app.use(
-  multer({storage: fileStorage, fileFilter: fileFilter}).single('file')
- );
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -45,6 +25,31 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
+
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'assignmentsFolder')
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf' || 
+      file.mimetype === 'application/msword' ||
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+}
+
+app.use(
+  multer({storage: fileStorage, fileFilter: fileFilter}).single('file')
+ );
+
+app.use('/assignmentsFolder', express.static(path.join(__dirname, 'assignmentsFolder')));
 
 app.use('/auth', authRoutes);
 app.use('/student', studentRoutes);

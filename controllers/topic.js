@@ -1,7 +1,9 @@
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 const Topic = require("../models/topic");
 const Course = require("../models/course");
+const Assignment = require("../models/assignment");
 
 exports.createTopic = async (req, res, next) => {
 	try {
@@ -12,7 +14,7 @@ exports.createTopic = async (req, res, next) => {
 			error.data  = errors.array();
 			throw error;
 		}
-		
+
 		const courseId = req.body.courseId;
 		const title = req.body.title;
 		const hidden = req.body.hidden;
@@ -111,6 +113,12 @@ exports.deleteTopic = async (req, res, next) => {
 		const topic = await Topic.findById(topicId);
 		const number = topic.num;
 
+		let assignments = await Assignment.find({topic: topicId});
+
+		assignments.forEach(async a => {
+			fs.unlinkSync(a.fileUrl);
+			await Assignment.deleteOne({_id: a._id});
+		});
 		await Topic.deleteOne({_id: topicId});
 		await Topic.updateMany({num: {$gt: number}}, { $inc: { num: -1 } } );
 

@@ -14,6 +14,11 @@ const assignmentSchema = new Schema({
 		type: String,
 		required: true
 	},
+	topic: {
+		type: Schema.Types.ObjectId,
+        ref: 'Topic',
+        required: true
+	},
 	course: {
 		type: Schema.Types.ObjectId,
         ref: 'Course',
