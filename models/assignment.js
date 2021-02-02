@@ -6,10 +6,10 @@ const assignmentSchema = new Schema({
 		type: String,
 		required: true
 	},
-	fileUrl: {
-		type: String,
-		required: true
-	},
+	fileUrl: [{
+			type: String,
+			required: true
+	}],
 	description: {
 		type: String,
 		required: true

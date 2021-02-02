@@ -27,10 +27,12 @@ app.use((req, res, next) => {
 });
 
 const fileStorage = multer.diskStorage({
+
   destination: (req, file, cb) => {
     cb(null, 'assignmentsFolder')
   },
   filename: (req, file, cb) => {
+    console.log(file);
     cb(null, new Date().toISOString() + '-' + file.originalname);
   }
 });
@@ -46,7 +48,7 @@ const fileFilter = (req, file, cb) => {
 }
 
 app.use(
-  multer({storage: fileStorage, fileFilter: fileFilter}).single('file')
+  multer({storage: fileStorage, fileFilter: fileFilter}).array('file')
  );
 
 app.use('/assignmentsFolder', express.static(path.join(__dirname, 'assignmentsFolder')));

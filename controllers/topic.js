@@ -116,7 +116,10 @@ exports.deleteTopic = async (req, res, next) => {
 		let assignments = await Assignment.find({topic: topicId});
 
 		assignments.forEach(async a => {
-			fs.unlinkSync(a.fileUrl);
+			a.fileUrl.forEach(file => {
+				fs.unlinkSync(file);
+			});
+			
 			await Assignment.deleteOne({_id: a._id});
 		});
 		await Topic.deleteOne({_id: topicId});
