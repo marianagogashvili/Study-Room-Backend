@@ -12,7 +12,7 @@ router.post('/getAssignmentsByCourse', isAuth, assignmentController.getByCourse)
 
 router.post('/getAssignmentById', isAuth, assignmentController.getById);
 
-// router.post('/editAssignment', isAuth, assignmentController.editAssignment);
+router.post('/editAssignment', isAuth, assignmentController.editAssignment);
 
 router.post('/deleteAssignment', isAuth, assignmentController.deleteAssignment);
 
