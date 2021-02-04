@@ -11,6 +11,7 @@ const groupRoutes = require('./routes/group');
 const courseRoutes = require('./routes/course');
 const topicRoutes = require('./routes/topic');
 const assignmentRoutes = require('./routes/assignment');
+const solutionRoutes = require('./routes/solution');
 
 const app = express();
 app.use(bodyParser.json());
@@ -60,7 +61,7 @@ app.use('/group', groupRoutes);
 app.use('/course', courseRoutes);
 app.use('/topic', topicRoutes);
 app.use('/assignment', assignmentRoutes);
-
+app.use('/solution', solutionRoutes);
 
 app.use((error, req, res, next) => {
   console.log(" Error" , error);

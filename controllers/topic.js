@@ -11,7 +11,7 @@ exports.createTopic = async (req, res, next) => {
 		if (!errors.isEmpty()) {
 			const error = new Error();
 			error.statusCode = 422;
-			error.data  = errors.array();
+			error.data  = "Validation was failed";
 			throw error;
 		}
 
@@ -82,6 +82,14 @@ exports.getTopics = async (req, res, next) => {
 
 exports.editTopic = async (req, res, next) => {
 	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			const error = new Error();
+			error.statusCode = 422;
+			error.data  = "Validation was failed";
+			throw error;
+		}
+
 		const topicId = req.body.id;
 		const title = req.body.title;
 		const hidden = req.body.hidden;

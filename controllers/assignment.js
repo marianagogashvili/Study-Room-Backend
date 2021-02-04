@@ -11,6 +11,16 @@ exports.createAssignment = async (req, res, next) => {
 		let availableFrom = new Date(req.body.availableFrom).setHours(new Date(req.body.availableFrom).getHours() + 2);
 		let deadline = new Date(req.body.deadline).setHours(new Date(req.body.deadline).getHours() + 2) || null;
 
+		if (title === '' || description === '' || courseId === '' || topicId === ''  || !availableFrom) {
+			req.files.forEach(file => {
+				fs.unlinkSync(file.path);
+			});
+			const err = new Error();
+			err.data = "Validation was failed";
+			err.status = 422;
+			throw err;
+		}
+
 		let fileUrls = [];
 		req.files.forEach(file => {
 			fileUrls.push(file.path);
@@ -56,6 +66,13 @@ exports.getById = async (req, res, next) => {
 		const id = req.body.id;
 		const assignment = await Assignment.findById(id).populate('topic');
 
+		if (!assignment) {
+			let err =  new Error();
+			err.statusCode = 404;
+			err.data = "This assignment does't exist";
+			throw err;
+		}
+
 		res.status(200).json(assignment);
 	} catch (err) {
 		if (!err.statusCode) {
@@ -72,10 +89,26 @@ exports.editAssignment = async (req, res, next) => {
 		const description = req.body.description;
 		const availableFrom = new Date(req.body.availableFrom).setHours(new Date(req.body.availableFrom).getHours() + 2);
 		const deadline = new Date(req.body.deadline).setHours(new Date(req.body.deadline).getHours() + 2) || null;
-
 		const remove = JSON.parse(req.body.remove);
 
 		const assignment = await Assignment.findById(id).populate('topic');
+		if (!assignment) {
+			let err =  new Error();
+			err.statusCode = 404;
+			err.data = "This assignment does't exist";
+			throw err;
+		}
+
+		if (title === '' || description === '' || !availableFrom) {
+			req.files.forEach(file => {
+				fs.unlinkSync(file.path);
+			});
+			const err = new Error();
+			err.data = "Validation was failed";
+			err.status = 422;
+			throw err;
+		}
+
 
 		let newFiles = [...assignment.fileUrl];
 		remove.forEach(r =>  {
@@ -111,6 +144,14 @@ exports.deleteAssignment = async (req, res, next) => {
 	try {
 		const id = req.body.id;
 		const assignment = await Assignment.findById(id)
+
+		if (!assignment) {
+			let err =  new Error();
+			err.statusCode = 404;
+			err.data = "This assignment does't exist";
+			throw err;
+		}
+
 		assignment.fileUrl.forEach(file => {
 			fs.unlinkSync(file);
 		});

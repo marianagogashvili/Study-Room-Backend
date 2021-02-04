@@ -5,11 +5,12 @@ const { body } = require('express-validator');
 const Course = require('../models/course');
 const isAuthTeacher = require('../middleware/is-auth-teacher');
 const isAuthStudent = require('../middleware/is-auth-student');
+const isAuth = require('../middleware/is-auth');
 
 const router = express.Router();
 
-router.post('/getCourseTeacher', isAuthTeacher, courseController.getCourse);
-// router.post('/getCourseStudent', isAuthStudent, courseController.getCourse);
+// router.post('/getCourseTeacher', isAuthTeacher, courseController.getCourse);
+router.post('/getCourseTeacher', isAuth, courseController.getCourse);
 
 router.post('/createCourse', [
 	body('title').not().isEmpty().withMessage('Title is empty')

@@ -4,17 +4,18 @@ const { body } = require('express-validator');
 const router = express.Router();
 const assignmentController = require('../controllers/assignment');
 const Assignment = require('../models/assignment');
-const isAuth = require('../middleware/is-auth-teacher');
+const isAuthTeacher = require('../middleware/is-auth-teacher');
+const isAuth = require('../middleware/is-auth');
 
-router.post('/createAssignment', isAuth, assignmentController.createAssignment);
+router.post('/createAssignment', isAuthTeacher, assignmentController.createAssignment);
 
 router.post('/getAssignmentsByCourse', isAuth, assignmentController.getByCourse);
 
 router.post('/getAssignmentById', isAuth, assignmentController.getById);
 
-router.post('/editAssignment', isAuth, assignmentController.editAssignment);
+router.post('/editAssignment', isAuthTeacher, assignmentController.editAssignment);
 
-router.post('/deleteAssignment', isAuth, assignmentController.deleteAssignment);
+router.post('/deleteAssignment', isAuthTeacher, assignmentController.deleteAssignment);
 
 
 module.exports = router;
