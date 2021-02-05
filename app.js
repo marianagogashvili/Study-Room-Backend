@@ -30,7 +30,12 @@ app.use((req, res, next) => {
 const fileStorage = multer.diskStorage({
 
   destination: (req, file, cb) => {
-    cb(null, 'assignmentsFolder')
+    if (req.body.dest && req.body.dest === 'solution') {
+      cb(null, 'solutionsFolder')
+    } else {
+      cb(null, 'assignmentsFolder')
+    }
+    
   },
   filename: (req, file, cb) => {
     console.log(file);
@@ -53,6 +58,7 @@ app.use(
  );
 
 app.use('/assignmentsFolder', express.static(path.join(__dirname, 'assignmentsFolder')));
+app.use('/solutionsFolder', express.static(path.join(__dirname, 'solutionsFolder')));
 
 app.use('/auth', authRoutes);
 app.use('/student', studentRoutes);
