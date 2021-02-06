@@ -6,6 +6,10 @@ const assignmentSchema = new Schema({
 		type: String,
 		required: true
 	},
+	maxGrade: {
+		type: Number,
+		required: true
+	},
 	fileUrl: [{
 			type: String,
 			required: true

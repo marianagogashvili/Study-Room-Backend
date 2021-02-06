@@ -13,6 +13,10 @@ router.post('/createSolution', isAuthStudent, solutionController.createSolution)
 
 router.post('/getSolutionStudent', isAuthStudent, solutionController.getSolutionStudent);
 
+router.post('/getSolutionsTeacher', isAuthTeacher, solutionController.getSolutionsTeacher);
+
+router.post('/updateSolutionTeacher', isAuthTeacher, solutionController.updateSolutionTeacher);
+
 router.post('/updateSolutionStudent', isAuthStudent, solutionController.updateSolutionStudent);
 
 router.post('/deleteSolution', isAuthStudent, solutionController.deleteSolution);

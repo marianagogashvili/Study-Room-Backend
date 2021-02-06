@@ -7,7 +7,9 @@ exports.createAssignment = async (req, res, next) => {
 		const title = req.body.title;
 		const description = req.body.description;
 		const courseId = req.body.courseId;
-		const topicId = req.body.topicId;    
+		const topicId = req.body.topicId;
+		const maxGrade = req.body.maxGrade;    
+
 		let availableFrom = new Date(req.body.availableFrom).setHours(new Date(req.body.availableFrom).getHours() + 2);
 		let deadline = new Date(req.body.deadline).setHours(new Date(req.body.deadline).getHours() + 2) || null;
 
@@ -32,6 +34,7 @@ exports.createAssignment = async (req, res, next) => {
 			fileUrl: fileUrls,
 			course: courseId,
 			topic: topicId,
+			maxGrade: maxGrade,
 			availableFrom: availableFrom,
 			deadline: deadline
 		});
@@ -87,6 +90,8 @@ exports.editAssignment = async (req, res, next) => {
 		const id = req.body.id;
 		const title = req.body.title;
 		const description = req.body.description;
+		const maxGrade = req.body.maxGrade;
+
 		const availableFrom = new Date(req.body.availableFrom).setHours(new Date(req.body.availableFrom).getHours() + 2);
 		const deadline = new Date(req.body.deadline).setHours(new Date(req.body.deadline).getHours() + 2) || null;
 		const remove = JSON.parse(req.body.remove);
@@ -99,7 +104,7 @@ exports.editAssignment = async (req, res, next) => {
 			throw err;
 		}
 
-		if (title === '' || description === '' || !availableFrom) {
+		if (title === '' || description === '' || !maxGrade  || !availableFrom) {
 			req.files.forEach(file => {
 				fs.unlinkSync(file.path);
 			});
@@ -124,6 +129,7 @@ exports.editAssignment = async (req, res, next) => {
 		assignment.availableFrom = availableFrom;
 		assignment.deadline = deadline;
 		assignment.fileUrl = newFiles;
+		assignment.maxGrade = maxGrade;
 
 		await assignment.save();
 
