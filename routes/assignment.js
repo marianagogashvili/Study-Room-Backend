@@ -9,7 +9,7 @@ const isAuth = require('../middleware/is-auth');
 
 router.post('/createAssignment', isAuthTeacher, assignmentController.createAssignment);
 
-router.post('/getAssignmentsByCourse', isAuth, assignmentController.getByCourse);
+// router.post('/getAssignmentsByCourse', isAuth, assignmentController.getByCourse);
 
 router.post('/getAssignmentById', isAuth, assignmentController.getById);
 

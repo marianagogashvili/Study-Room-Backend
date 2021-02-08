@@ -49,20 +49,20 @@ exports.createAssignment = async (req, res, next) => {
 	}
 };
 
-exports.getByCourse =  async (req, res, next) => {
-	try {
-		const courseId = req.body.courseId;
+// exports.getByCourse =  async (req, res, next) => {
+// 	try {
+// 		const courseId = req.body.courseId;
 
-		const assignments = await Assignment.find({course: courseId});
+// 		const assignments = await Assignment.find({course: courseId});
 
-		res.status(200).json(assignments);
-	} catch (err) {
-		if (!err.statusCode) {
-	      err.statusCode = 500;
-	    }
-		next(err);
-	}
-};
+// 		res.status(200).json(assignments);
+// 	} catch (err) {
+// 		if (!err.statusCode) {
+// 	      err.statusCode = 500;
+// 	    }
+// 		next(err);
+// 	}
+// };
 
 exports.getById = async (req, res, next) => {
 	try {

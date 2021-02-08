@@ -37,6 +37,6 @@ const assignmentSchema = new Schema({
 		type: Date,
 		required: false
 	}
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Assignment', assignmentSchema);

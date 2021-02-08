@@ -12,6 +12,7 @@ const courseRoutes = require('./routes/course');
 const topicRoutes = require('./routes/topic');
 const assignmentRoutes = require('./routes/assignment');
 const solutionRoutes = require('./routes/solution');
+const postRoutes = require('./routes/post');
 
 const app = express();
 app.use(bodyParser.json());
@@ -32,6 +33,8 @@ const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (req.body.dest && req.body.dest === 'solution') {
       cb(null, 'solutionsFolder')
+    } else if (req.body.dest && req.body.dest === 'post') {
+      cb(null, 'postsFolder')
     } else {
       cb(null, 'assignmentsFolder')
     }
@@ -59,6 +62,7 @@ app.use(
 
 app.use('/assignmentsFolder', express.static(path.join(__dirname, 'assignmentsFolder')));
 app.use('/solutionsFolder', express.static(path.join(__dirname, 'solutionsFolder')));
+app.use('/postsFolder', express.static(path.join(__dirname, 'postsFolder')));
 
 app.use('/auth', authRoutes);
 app.use('/student', studentRoutes);
@@ -68,6 +72,7 @@ app.use('/course', courseRoutes);
 app.use('/topic', topicRoutes);
 app.use('/assignment', assignmentRoutes);
 app.use('/solution', solutionRoutes);
+app.use('/post', postRoutes);
 
 app.use((error, req, res, next) => {
   console.log(" Error" , error);

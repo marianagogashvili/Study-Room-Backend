@@ -4,6 +4,7 @@ const fs = require('fs');
 const Topic = require("../models/topic");
 const Course = require("../models/course");
 const Assignment = require("../models/assignment");
+const Post = require("../models/post");
 
 exports.createTopic = async (req, res, next) => {
 	try {
@@ -122,13 +123,30 @@ exports.deleteTopic = async (req, res, next) => {
 		const number = topic.num;
 
 		let assignments = await Assignment.find({topic: topicId});
+		let posts = await Post.find({topic: topicId});
 
 		assignments.forEach(async a => {
+			
+			const solutions = await Solution.find({assignment: a._id});
+			solutions.forEach(async solution => {
+				solution.fileUrl.forEach(file => {
+					fs.unlinkSync(file);
+				});
+				await Solution.deleteOne({_id: solution._id});
+			});
+
 			a.fileUrl.forEach(file => {
 				fs.unlinkSync(file);
 			});
-			
+
 			await Assignment.deleteOne({_id: a._id});
+		});
+		posts.forEach(async post => {
+			if (post.fileUrl !== null) {
+				fs.unlinkSync(post.fileUrl);
+			}
+
+			await Post.deleteOne({_id: post._id});
 		});
 		await Topic.deleteOne({_id: topicId});
 		await Topic.updateMany({num: {$gt: number}}, { $inc: { num: -1 } } );

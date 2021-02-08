@@ -26,31 +26,52 @@ exports.createSolution = async (req, res, next) => {
 }
 
 exports.updateSolutionStudent = async (req, res, next) => {
+	try {
+		const assignmentId = req.body.assignmentId;
+		const studentId = req.body.studentId;
+		const remove = JSON.parse(req.body.remove);
 
-	const assignmentId = req.body.assignmentId;
-	const studentId = req.body.studentId;
-	const remove = JSON.parse(req.body.remove);
+		const solution = await Solution.findOne({assignment: assignmentId, student: studentId});
+		
+		if (!solution) {
+			const error = new Error();
+			error.data = "Solution does not exist";
+			error.status = 403;
+			throw error;
+		}
 
-	remove.forEach(file => {
-		fs.unlinkSync(file);
-	});
+		if (!solution.grade) {
+			remove.forEach(file => {
+				fs.unlinkSync(file);
+			});
 
-	const solution = await Solution.findOne({assignment: assignmentId, student: studentId});
+			let files = [...solution.fileUrl];
 
-	let files = [...solution.fileUrl];
+			remove.forEach(r => {
+				files = files.filter(file => file !== r);
+			});
 
-	remove.forEach(r => {
-		files = files.filter(file => file !== r);
-	});
+			req.files.forEach(file => {
+				files.push(file.path);
+			});
 
-	req.files.forEach(file => {
-		files.push(file.path);
-	});
+			solution.fileUrl = files;
+			await solution.save();
+		} else {
+			const error = new Error();
+			error.data = "Sorry, but you can't edit graded solution";
+			error.status = 403;
+			throw error;
+		}
 
-	solution.fileUrl = files;
-	await solution.save();
+		res.status(201).json(solution);
+	}  catch(err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
 
-	res.status(201).json(solution);
 }
 
 

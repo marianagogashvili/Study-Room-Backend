@@ -5,6 +5,9 @@ const Mongoose = require('mongoose')
 const Course = require("../models/course");
 const Student = require("../models/student");
 const Teacher = require("../models/teacher");
+const Assignment = require("../models/assignment");
+const Post = require("../models/post");
+
 const Group = require("../models/group");
 
 exports.createCourse = async (req, res, next) => {
@@ -285,4 +288,17 @@ exports.deleteCourse = async (req, res, next) => {
 	    }
 		next(err);
 	}
+}
+
+exports.getFeed = async (req, res, next) => {
+	const courseId = req.body.courseId;
+	let assignments = await Assignment.find({course: courseId});
+	let posts = await Post.find({course: courseId});
+
+	let combinedAr = assignments.concat(posts);
+	combinedAr.sort(function(a, b){
+	  return new Date(a.createdAt) - new Date(b.createdAt);
+	});
+	// console.log(combinedAr);
+	res.status(200).json(combinedAr);
 }

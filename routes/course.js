@@ -44,4 +44,6 @@ router.post('/deleteStudents', isAuthTeacher, courseController.deleteStudents);
 
 router.post('/deleteCourse', isAuthTeacher, courseController.deleteCourse);
 
+router.post('/getFeed', isAuth, courseController.getFeed); //isAuthTeacher,
+
 module.exports = router; 
