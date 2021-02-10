@@ -6,6 +6,16 @@ exports.createPost = async (req, res, next) => {
 	const title = req.body.title;
 	const course = req.body.courseId;
 	const topic = req.body.topicId;
+	const teacherId = req.body.teacherId;
+
+	const postCourse = await Course.findById(course);
+	if (postCourse.creator.toString() !== teacherId) {
+		const err = new Error();
+		err.status = 403;
+		err.data = 'You are not validated';
+		throw err;
+	}
+
 	const link = req.body.link === "undefined" ? null : req.body.link;
 
 	let fileUrl = null;
@@ -24,7 +34,6 @@ exports.createPost = async (req, res, next) => {
 	res.status(200).json(post);
 };
 
-
 exports.getPostsByCourse = async (req, res, next) => {
 	const courseId = req.body.id;
 	const posts = await Post.find({course: courseId});
@@ -34,7 +43,17 @@ exports.getPostsByCourse = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
 	const postId = req.body.id;
-	const post = await Post.findById(postId);
+	const teacherId = req.body.teacherId;
+
+	const post = await Post.findById(postId).populate('course');
+
+	if (post.course.creator.toString() !== teacherId) {
+		const err = new Error();
+		err.status = 403;
+		err.data = 'You are not validated';
+		throw err;
+	}
+
 	if (post.fileUrl) {
 		fs.unlinkSync(post.fileUrl);
 	}

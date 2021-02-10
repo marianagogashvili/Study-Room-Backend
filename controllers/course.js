@@ -10,6 +10,15 @@ const Post = require("../models/post");
 
 const Group = require("../models/group");
 
+let checkCourseOwner = (creator, teacherId) => {
+	if (creator !== teacherId) {
+		const err = new Error();
+		err.status = 404;
+		err.data = 'Permission denied';
+		throw err;
+	}
+}
+
 exports.createCourse = async (req, res, next) => {
 	try {
 		const errors = validationResult(req);
@@ -20,7 +29,6 @@ exports.createCourse = async (req, res, next) => {
 			throw error;
 		}
 
-		const teacherId = req.body.teacherId;
 		const title = req.body.title;
 		const description = req.body.description;
 		const key = req.body.key;
@@ -31,12 +39,12 @@ exports.createCourse = async (req, res, next) => {
 			title: title,
 			description: description,
 			key: key,
-			creator: teacherId
+			creator: req.userId
 		});
 
 		await course.save();
 
-		await Teacher.findByIdAndUpdate(teacherId, { $push: { courses: course }});
+		await Teacher.findByIdAndUpdate(req.userId, { $push: { courses: course }});
 
 		if (students.length !== []) {
 			students.forEach(async (s) => {
@@ -70,6 +78,8 @@ exports.createCourse = async (req, res, next) => {
 
 exports.getCourse = async (req, res, next) => {
 	try {	
+		console.log(req.userId);
+
 		const id = req.body.id;
 		const course = await Course.findById(Mongoose.Types.ObjectId(id)).populate('creator');
 		if (course) {
@@ -98,12 +108,12 @@ exports.editCourse = async (req, res, next) => {
 			throw error;
 		}
 		const id = req.body.id;
-		const teacherId = req.body.teacherId;
 		const title = req.body.title;
 		const key = req.body.key;
 		const description = req.body.description;
 
 		const course = await Course.findById(id);
+
 		if (!course) {
 			const err = new Error();
 			err.status = 404;
@@ -111,17 +121,13 @@ exports.editCourse = async (req, res, next) => {
 			throw err;
 		}
 
-		if (course.creator.toString() === teacherId) {
-			course.title = title;
-			course.key = key;
-			course.description = description;
-			await course.save();
-		} else {
-			const err = new Error();
-			err.status = 404;
-			err.data = 'Permission denied';
-			throw err;
-		}
+		checkCourseOwner(course.creator.toString(), req.userId);
+
+		course.title = title;
+		course.key = key;
+		course.description = description;
+		await course.save();
+
 		const result = await Course.findByIdAndUpdate(id, {title: title, key: key, description: description});
 		res.status(200).json({message: "Course was updated successfully"}); 
 	} catch (err) {
@@ -166,8 +172,8 @@ exports.deleteStudent = async (req, res, next) => {
 			err.data = 'This course does not exist';
 			throw err;
 		}
-		console.log(student);
-		console.log(course);
+
+		checkCourseOwner(course.creator.toString(), req.userId);
 
 		await student.courses.pull(courseId);
 		await student.save();
@@ -209,14 +215,18 @@ exports.findStudentsByParams = async (req, res, next) => {
 exports.addStudents = async (req, res, next) => {
 	try {
 		const course = await Course.findById(req.body.courseId);
+
 		if (!course) {
 			const err = new Error();
 			err.status = 404;
 			err.data = 'This course does not exist';
 			throw err;
 		}
+
 		const students = req.body.students;
 
+		checkCourseOwner(course.creator.toString(), req.userId);
+		
 		if (students.length !== []) {
 			students.forEach(async (s) => {
 				course.students.push(s);
@@ -239,6 +249,7 @@ exports.addStudents = async (req, res, next) => {
 exports.deleteStudents = async (req, res, next) => {
 	try {
 		const courseId = req.body.courseId;
+
 		const course = await Course.findById(courseId);
 		if (!course) {
 			const err = new Error();
@@ -246,6 +257,9 @@ exports.deleteStudents = async (req, res, next) => {
 			err.data = 'This course does not exist';
 			throw err;
 		}
+		
+		checkCourseOwner(course.creator.toString(), req.userId);
+
 		course.students.forEach(async (studentId) => {
 			const student = await Student.findById(studentId);
 
@@ -266,14 +280,17 @@ exports.deleteStudents = async (req, res, next) => {
 
 exports.deleteCourse = async (req, res, next) => {
 	try {
-
 		const course = await Course.findById(req.body.id);
+
 		if (!course) {
 			const err = new Error();
 			err.status = 404;
 			err.data = 'This course does not exist';
 			throw err;
 		}
+
+		checkCourseOwner(course.creator.toString(), req.userId);
+
 		course.students.forEach(async (studentId) => {
 			const student = await Student.findById(studentId);
 

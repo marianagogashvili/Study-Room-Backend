@@ -10,7 +10,7 @@ module.exports = async (req, res, next) => {
 			error.statusCode = 401;
 			throw error;
 		} else { 
-			req.userId = decodedToken.userId;
+			req.userId = decodedToken.id;
 		}
 	} catch (err) {
 		err.statusCode = 500;

@@ -1,6 +1,20 @@
 const { validationResult } = require('express-validator');
 const Assignment = require("../models/assignment");
+const Course = require("../models/course");
+const Solution = require("../models/solution");
+
 const fs = require('fs');
+
+let checkCourseCreator = async (courseId, teacherId) => {
+
+	const course = await Course.findById(courseId);
+	if (course.creator.toString() !== teacherId) {
+		const err = new Error();
+		err.data = "You are not allowed to do this";
+		err.status = 403;
+		throw err;
+	}
+}
 
 exports.createAssignment = async (req, res, next) => {
 	try {
@@ -8,7 +22,9 @@ exports.createAssignment = async (req, res, next) => {
 		const description = req.body.description;
 		const courseId = req.body.courseId;
 		const topicId = req.body.topicId;
-		const maxGrade = req.body.maxGrade;    
+		const maxGrade = req.body.maxGrade; 
+
+		checkCourseCreator(courseId, req.userId);
 
 		let availableFrom = new Date(req.body.availableFrom).setHours(new Date(req.body.availableFrom).getHours() + 2);
 		let deadline = new Date(req.body.deadline).setHours(new Date(req.body.deadline).getHours() + 2) || null;
@@ -49,21 +65,6 @@ exports.createAssignment = async (req, res, next) => {
 	}
 };
 
-// exports.getByCourse =  async (req, res, next) => {
-// 	try {
-// 		const courseId = req.body.courseId;
-
-// 		const assignments = await Assignment.find({course: courseId});
-
-// 		res.status(200).json(assignments);
-// 	} catch (err) {
-// 		if (!err.statusCode) {
-// 	      err.statusCode = 500;
-// 	    }
-// 		next(err);
-// 	}
-// };
-
 exports.getById = async (req, res, next) => {
 	try {
 		const id = req.body.id;
@@ -97,6 +98,9 @@ exports.editAssignment = async (req, res, next) => {
 		const remove = JSON.parse(req.body.remove);
 
 		const assignment = await Assignment.findById(id).populate('topic');
+
+		checkCourseCreator(assignment.course, req.userId);
+
 		if (!assignment) {
 			let err =  new Error();
 			err.statusCode = 404;
@@ -157,6 +161,16 @@ exports.deleteAssignment = async (req, res, next) => {
 			err.data = "This assignment does't exist";
 			throw err;
 		}
+
+		checkCourseCreator(assignment.course, req.userId);
+
+		const solutions = await Solution.find({assignment: assignment._id});
+		solutions.forEach(async solution => {
+			solution.fileUrl.forEach(file => {
+				fs.unlinkSync(file);
+			});
+			await Solution.deleteOne({_id: solution.id});
+		});
 
 		assignment.fileUrl.forEach(file => {
 			fs.unlinkSync(file);

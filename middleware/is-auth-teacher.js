@@ -15,8 +15,8 @@ module.exports = async (req, res, next) => {
 			error.data = 'Not authenticated';
 			error.statusCode = 401;
 			throw error;
-		} else if (decodedToken.type === 'student') { 
-			req.userId = decodedToken.userId;
+		} else if (decodedToken.type === 'teacher') { 
+			req.userId = decodedToken.id;
 		}
 	} catch (err) {
 		err.statusCode = 500;
