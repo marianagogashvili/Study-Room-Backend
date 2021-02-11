@@ -6,8 +6,8 @@ const Student = require('../models/student');
 
 exports.getStudent = async (req, res, next) => {
 	try {
-		const studentId = req.body.id;
-		const student = await Student.findById(Mongoose.Types.ObjectId(studentId)).populate('group').populate('courses');
+		const studentId = req.userId;
+		const student = await Student.findById(studentId).populate('group').populate('courses');
 		if (!student) {
 			const error = new Error();
 			error.statusCode = 404;
@@ -34,7 +34,7 @@ exports.editStudent = async (req, res, next) => {
 			throw error;
 		}
 
-		const id = req.body.id;
+		const id = req.userId;
 		const login = req.body.login;
 
 		const checkLogin = await Student.findOne({login:login});

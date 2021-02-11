@@ -7,8 +7,8 @@ const Student = require('../models/student');
 
 exports.getTeacher = async (req, res, next) => {
 	try {
-		const teacherId = req.body.id;
-		const teacher = await Teacher.findById(Mongoose.Types.ObjectId(teacherId)).populate('courses');
+		const teacherId = req.userId;
+		const teacher = await Teacher.findById(teacherId).populate('courses');
 		if (!teacher) {
 			const error = new Error();
 			error.statusCode = 404;
@@ -35,7 +35,7 @@ exports.editTeacher = async (req, res, next) => {
 			throw error;
 		}
 
-		const id = req.body.id;
+		const id = req.userId;
 		const login = req.body.login;
 
 		const checkLogin = await Teacher.findOne({login:login});

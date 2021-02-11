@@ -1,15 +1,15 @@
 const { validationResult } = require('express-validator');
 const fs = require('fs');
 const Post = require("../models/post");
+const Course = require("../models/course");
 
 exports.createPost = async (req, res, next) => {
 	const title = req.body.title;
 	const course = req.body.courseId;
 	const topic = req.body.topicId;
-	const teacherId = req.body.teacherId;
 
 	const postCourse = await Course.findById(course);
-	if (postCourse.creator.toString() !== teacherId) {
+	if (postCourse.creator.toString() !== req.userId) {
 		const err = new Error();
 		err.status = 403;
 		err.data = 'You are not validated';
@@ -43,11 +43,10 @@ exports.getPostsByCourse = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
 	const postId = req.body.id;
-	const teacherId = req.body.teacherId;
 
 	const post = await Post.findById(postId).populate('course');
 
-	if (post.course.creator.toString() !== teacherId) {
+	if (post.course.creator.toString() !== req.userId) {
 		const err = new Error();
 		err.status = 403;
 		err.data = 'You are not validated';

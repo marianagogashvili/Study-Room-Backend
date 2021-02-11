@@ -29,6 +29,13 @@ exports.createTopic = async (req, res, next) => {
 			throw error;
 		}
 
+		if (course.creator.toString() !== req.userId ) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = 'Permission denied';
+			throw error;
+		}
+
 		if (!beforeTopic) {
 			let numberOfTopics = await Topic.countDocuments({course: courseId});
 			const num = numberOfTopics + 1;
@@ -95,13 +102,21 @@ exports.editTopic = async (req, res, next) => {
 		const title = req.body.title;
 		const hidden = req.body.hidden;
 
-		const topic = await Topic.findById(topicId);
+		const topic = await Topic.findById(topicId).populate('course');
 		if (!topic) {
 			const error = new Error();
 			error.statusCode = 404;
 			error.data  = 'This topic does not exist';
 			throw error;
 		}
+
+		if (topic.course.creator.toString() !== req.userId) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = 'Permission denied';
+			throw error;
+		}
+
 		topic.title = title;
 		topic.hidden = hidden;
 
@@ -119,9 +134,21 @@ exports.editTopic = async (req, res, next) => {
 exports.deleteTopic = async (req, res, next) => {
 	try {
 		const topicId = req.body.id;
-		const topic = await Topic.findById(topicId);
-		const number = topic.num;
+		const topic = await Topic.findById(topicId).populate('course');
+		if (!topic) {
+			const error = new Error();
+			error.statusCode = 404;
+			error.data  = 'This topic does not exist';
+			throw error;
+		}
+		if (topic.course.creator.toString() !== req.userId) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = 'Permission denied';
+			throw error;
+		}
 
+		const number = topic.num;
 		let assignments = await Assignment.find({topic: topicId});
 		let posts = await Post.find({topic: topicId});
 

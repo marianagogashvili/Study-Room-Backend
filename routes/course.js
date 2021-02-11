@@ -10,7 +10,7 @@ const isAuth = require('../middleware/is-auth');
 const router = express.Router();
 
 // router.post('/getCourseTeacher', isAuthTeacher, courseController.getCourse);
-router.post('/getCourseTeacher', isAuth, courseController.getCourse);
+router.post('/getCourse', isAuth, courseController.getCourse);
 
 router.post('/createCourse', [
 	body('title').not().isEmpty().withMessage('Title is empty')

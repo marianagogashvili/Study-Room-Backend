@@ -7,7 +7,7 @@ const isAuth = require('../middleware/is-auth-student');
 
 const Student = require('../models/student');
 
-router.post('/getStudent', isAuth, studentController.getStudent);
+router.get('/getStudent', isAuth, studentController.getStudent);
 
 router.put('/editStudent', [
 	body('fullName')

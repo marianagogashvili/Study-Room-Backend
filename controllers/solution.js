@@ -8,30 +8,50 @@ const Mongoose = require('mongoose');
 const fs = require('fs');
 
 exports.createSolution = async (req, res, next) => {
-	const assignmentId = req.body.assignmentId;
-	const studentId = req.body.studentId;
+	try {
+		const assignmentId = req.body.assignmentId;
 
-	let files = [];
-	req.files.forEach(file => {
-		files.push(file.path);
-	});
+		const assignment = await Assignment.findById(assignmentId).populate('course');
+		if (!assignment.course.students.includes(req.userId)) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = "Sorry, you are not a member of this course";
+			throw error;
+		}
 
-	let solution = new Solution({
-		assignment: assignmentId,
-		student: studentId,
-		fileUrl: files
-	});
-	await solution.save();
-	res.status(201).json(solution);
+		let files = [];
+		req.files.forEach(file => {
+			files.push(file.path);
+		});
+
+		let solution = new Solution({
+			assignment: assignmentId,
+			student: req.userId,
+			fileUrl: files
+		});
+		await solution.save();
+		res.status(201).json(solution);
+	}  catch(err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
 }
 
 exports.updateSolutionStudent = async (req, res, next) => {
 	try {
-		const assignmentId = req.body.assignmentId;
-		const studentId = req.body.studentId;
+		const solutionId = req.body.solutionId;
 		const remove = JSON.parse(req.body.remove);
 
-		const solution = await Solution.findOne({assignment: assignmentId, student: studentId});
+		const solution = await Solution.findById(solutionId);
+
+		if (solution.student.toString() !== req.userId) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = "Sorry, you are not a member of this course";
+			throw error;
+		}
 		
 		if (!solution) {
 			const error = new Error();
@@ -76,25 +96,37 @@ exports.updateSolutionStudent = async (req, res, next) => {
 
 
 exports.updateSolutionTeacher= async (req, res, next) => {
-	const assignmentId = req.body.assignmentId;
-	const studentId = req.body.studentId;
-	const grade = req.body.grade;
-	const comment = req.body.comment;
+	try {
+		const solutionId = req.body.solutionId;
+		const grade = req.body.grade;
+		const comment = req.body.comment;
 
-	const solution = await Solution.findOne({assignment: assignmentId, student: studentId});
+		const solution = await Solution.findById(solutionId).populate({path: 'assignment', populate: {path: 'course'}});
 
-	solution.grade = grade;
-	solution.comment = comment;
-	await solution.save();
+		if (solution.assignment.course.creator.toString() !== req.userId) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = "Sorry, you are not a member of this course";
+			throw error;
+		}
 
-	res.status(201).json(solution);
+		solution.grade = grade;
+		solution.comment = comment;
+		await solution.save();
+
+		res.status(201).json(solution);
+	} catch(err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
 }
 
 exports.getSolutionStudent = async (req, res, next) => {
-	const assignmentId = req.body.assignmentId;
-	const studentId = req.body.studentId;      
+	const assignmentId = req.body.assignmentId;   
 
-	const solution = await Solution.findOne({assignment: assignmentId, student: studentId});
+	const solution = await Solution.findOne({assignment: assignmentId, student: req.userId});
 	if (!solution) {
 		res.status(200).json(null);
 	} else {
@@ -114,14 +146,28 @@ exports.getSolutionsTeacher = async (req, res, next) => {
 }
 
 exports.deleteSolution = async (req, res, next) => {
-	const assignmentId = req.body.assignmentId;
-	const studentId = req.body.studentId;
+	try {
+		const solutionId = req.body.solutionId;
 
-	const solution = await Solution.findOne({assignment: assignmentId, student: studentId});
+		const solution = await Solution.findById(solutionId);
 
-	solution.fileUrl.forEach(file => fs.unlinkSync(file));
-	await Solution.deleteOne({_id: solution._id});
+		if (solution.student.toString() !== req.userId) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = "Sorry, you are not a member of this course";
+			throw error;
+		}
 
-	res.status(201).json({message: "Solution deleted"});
+		solution.fileUrl.forEach(file => fs.unlinkSync(file));
+		await Solution.deleteOne({_id: solutionId});
+
+		res.status(201).json({message: "Solution deleted"});
+	} catch(err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+	
 	
 }

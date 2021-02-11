@@ -6,7 +6,7 @@ const teacherController = require('../controllers/teacher');
 const Teacher = require('../models/teacher');
 const isAuth = require('../middleware/is-auth-teacher');
 
-router.post('/getTeacher', isAuth, teacherController.getTeacher);
+router.get('/getTeacher', isAuth, teacherController.getTeacher);
 
 router.put('/editTeacher', [
 	body('fullName')
