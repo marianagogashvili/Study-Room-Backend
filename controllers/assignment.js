@@ -186,25 +186,4 @@ exports.deleteAssignment = async (req, res, next) => {
 	}
 }
 
-exports.getAssignmentWithGrades = async (req, res, next) => { 
-	try {
-		// const courseId = req.body.courseId;
-		const courseId = '600f06bf2c10d691de397c98';
-		// const coures = await Course.findById(courseId);
-		const assignments = await Assignment.find({course: courseId});
-		let result = [];
-
-		for (const assignment of assignments) {
-			const solution = await Solution.findOne({assignment: assignment._id, student: req.userId});
-			result.push({id: assignment._id, title: assignment.title, deadline: assignment.deadline, maxGrade: assignment.maxGrade, grade: solution ? solution.grade : null});
-		}
-
-		console.log(result);
-	} catch (err) {
-		if (!err.statusCode) {
-	      err.statusCode = 500;
-	    }
-		next(err);
-	}
-}
 	

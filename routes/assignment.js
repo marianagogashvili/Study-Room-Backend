@@ -17,7 +17,5 @@ router.post('/editAssignment', isAuthTeacher, assignmentController.editAssignmen
 
 router.post('/deleteAssignment', isAuthTeacher, assignmentController.deleteAssignment);
 
-// router.post('/getAssignmentWithGrades', isAuth, assignmentController.getAssignmentWithGrades);
-router.get('/getAssignmentWithGrades', assignmentController.getAssignmentWithGrades);
 
 module.exports = router;

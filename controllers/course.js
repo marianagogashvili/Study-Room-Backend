@@ -7,6 +7,7 @@ const Student = require("../models/student");
 const Teacher = require("../models/teacher");
 const Assignment = require("../models/assignment");
 const Post = require("../models/post");
+const Solution = require("../models/solution");
 
 const Group = require("../models/group");
 
@@ -318,4 +319,26 @@ exports.getFeed = async (req, res, next) => {
 	});
 	// console.log(combinedAr);
 	res.status(200).json(combinedAr);
+}
+
+exports.getStudentGrades = async (req, res, next) => { 
+	try {
+		const courseId = req.body.id;
+
+		const assignments = await Assignment.find({course: courseId});
+		let result = [];
+
+		for (const assignment of assignments) {
+			const solution = await Solution.findOne({assignment: assignment._id, student: req.userId});
+			result.push({id: assignment._id, title: assignment.title, createdAt: assignment.createdAt, deadline: assignment.deadline, maxGrade: assignment.maxGrade, grade: solution ? solution.grade : null});
+		}
+
+		console.log(result);
+		res.status(200).json(result);
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
 }
