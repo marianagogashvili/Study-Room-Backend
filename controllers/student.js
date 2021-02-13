@@ -3,6 +3,8 @@ const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const Mongoose = require('mongoose');
 const Student = require('../models/student');
+const Assignment = require('../models/assignment');
+const Solution = require('../models/solution');
 
 exports.getStudent = async (req, res, next) => {
 	try {
@@ -73,6 +75,39 @@ exports.editStudent = async (req, res, next) => {
 			}
 		}
 	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
+exports.getGrades = async (req, res, next) => {
+	try {
+
+		const student = await Student.findById(req.userId).populate('courses');
+		console.log(student.courses);
+
+		let assignments;
+		let solutions;
+
+		let result = [];
+
+		for (course of student.courses) {
+			let maxGrade = 0;
+			let grade = 0;
+
+			assignments = await Assignment.find({course: course._id});
+			assignments.forEach(a => maxGrade += a.maxGrade);
+			solutions = await Solution.find({student: req.userId, assignment: {"$in": assignments} });
+			solutions.forEach(s => grade += s.grade);
+			result.push({id: course._id, title: course.title, grade: grade, maxGrade: maxGrade});
+		}
+
+
+		res.status(200).json(result);
+
+	}  catch (err) {
 		if (!err.statusCode) {
 	      err.statusCode = 500;
 	    }

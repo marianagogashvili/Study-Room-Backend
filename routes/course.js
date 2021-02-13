@@ -37,7 +37,7 @@ router.post('/findStudentsByParams', [
 	body('login').trim(),
 	body('fullName').trim(),
 	body('group').trim()
-], isAuthTeacher, courseController.findStudentsByParams);
+], isAuth, courseController.findStudentsByParams);
 
 router.post('/addStudents', isAuthTeacher, courseController.addStudents);
 

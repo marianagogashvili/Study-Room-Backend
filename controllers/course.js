@@ -142,7 +142,7 @@ exports.editCourse = async (req, res, next) => {
 exports.getStudents = async (req, res, next) => {
 	try {
 		const id = req.body.id;
-		const students = await Course.findById(Mongoose.Types.ObjectId(id)).populate({ path: 'students', populate: { path: 'group' }});
+		const students = await Course.findById(Mongoose.Types.ObjectId(id)).populate({ path: 'students', populate: { path: 'group' }, options: {sort: {'fullName': 1} }});
 
 		res.status(200).json(students); 
 	} catch (err) {
@@ -330,7 +330,7 @@ exports.getStudentGrades = async (req, res, next) => {
 
 		for (const assignment of assignments) {
 			const solution = await Solution.findOne({assignment: assignment._id, student: req.userId});
-			result.push({id: assignment._id, title: assignment.title, createdAt: assignment.createdAt, deadline: assignment.deadline, maxGrade: assignment.maxGrade, grade: solution ? solution.grade : null});
+			result.push({id: assignment._id, title: assignment.title, createdAt: assignment.createdAt, deadline: assignment.deadline, maxGrade: assignment.maxGrade, grade: solution ? solution.grade : null, comment: solution ? solution.comment : null});
 		}
 
 		console.log(result);

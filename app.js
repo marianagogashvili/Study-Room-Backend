@@ -13,6 +13,7 @@ const topicRoutes = require('./routes/topic');
 const assignmentRoutes = require('./routes/assignment');
 const solutionRoutes = require('./routes/solution');
 const postRoutes = require('./routes/post');
+const testworkRoutes = require('./routes/testwork');
 
 const app = express();
 app.use(bodyParser.json());
@@ -73,6 +74,8 @@ app.use('/topic', topicRoutes);
 app.use('/assignment', assignmentRoutes);
 app.use('/solution', solutionRoutes);
 app.use('/post', postRoutes);
+app.use('/testwork', testworkRoutes);
+
 
 app.use((error, req, res, next) => {
   console.log(" Error" , error);
