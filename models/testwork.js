@@ -2,13 +2,12 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const testworkSchema = new Schema({
-	course: {
-		type: Schema.Types.ObjectId,
-        ref: 'Course',
-        required: true
-	},
 	title: {
 		type: String,
+		required: true
+	},
+	hidden: {
+		type: Boolean,
 		required: true
 	},
 	deadline: {
@@ -17,9 +16,19 @@ const testworkSchema = new Schema({
 	timeRestriction: {
 		type: Number
 	},
+	topic: {
+		type: Schema.Types.ObjectId,
+        ref: 'Topic',
+        required: true
+	},
+	course: {
+		type: Schema.Types.ObjectId,
+        ref: 'Course',
+        required: true
+	},
 	questions: [
 		{
-			question: {
+			title: {
 				type: String,
 				required: true
 			},

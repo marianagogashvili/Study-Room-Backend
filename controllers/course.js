@@ -79,8 +79,6 @@ exports.createCourse = async (req, res, next) => {
 
 exports.getCourse = async (req, res, next) => {
 	try {	
-		console.log(req.userId);
-
 		const id = req.body.id;
 		const course = await Course.findById(Mongoose.Types.ObjectId(id)).populate('creator');
 		if (course) {

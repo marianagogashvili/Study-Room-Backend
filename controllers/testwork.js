@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const Testwork = require("../models/testwork");
+const Course = require("../models/course");
 
 exports.createTest = async (req, res, next) => {
 	try {
@@ -13,20 +14,30 @@ exports.createTest = async (req, res, next) => {
 			throw error;
 		}
 
+		console.log(req.body);
+
 		const title = req.body.title;
 		const questions = req.body.questions;
-		const dealine = req.body.dealine;
+		const deadline = req.body.deadline;
+		const hidden = req.body.hidden;
 		const timeRestriction = req.body.timeRestriction;
+		const topicId = req.body.topicId;
+
+		console.log(topicId);
 		
 		const test = new Testwork({
 			title: title,
 			course: courseId,
 			deadline: deadline,
-			timeRestriction: timeRestriction
+			hidden: hidden,
+			timeRestriction: timeRestriction,
+			topic: topicId
 		});
-		test.questions.push(...questions);
+
 		await test.save();
 
+		await Testwork.updateOne({ _id: test._id }, { $push: { questions: questions } });	
+		res.status(201).json(test);
 	}  catch (err) {
 		console.log(err);
 		if (!err.statusCode) {
