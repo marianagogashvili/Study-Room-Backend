@@ -4,6 +4,8 @@ const { body } = require('express-validator');
 const router = express.Router();
 const testworkController = require('../controllers/testwork');
 const Testwork = require('../models/testwork');
+
+const isAuthStudent = require('../middleware/is-auth-student');
 const isAuthTeacher = require('../middleware/is-auth-teacher');
 const isAuth = require('../middleware/is-auth');
 
@@ -14,5 +16,8 @@ router.post('/updateTest', isAuthTeacher, testworkController.updateTest);
 router.post('/deleteTest', isAuthTeacher, testworkController.deleteTest);
 
 router.post('/getTest', isAuth, testworkController.getTest);
+
+router.post('/saveAnswers', isAuthStudent, testworkController.saveAnswers);
+
 
 module.exports = router;

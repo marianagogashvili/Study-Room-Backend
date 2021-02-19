@@ -44,6 +44,13 @@ const testworkSchema = new Schema({
 			d: {
 				type: String
 			},
+			autoCheck: {
+				type: Boolean
+			},
+			points: {
+				type: Number,
+				required: true
+			},
 			answer: {
 				type: String,
 				required: true
