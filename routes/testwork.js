@@ -17,7 +17,5 @@ router.post('/deleteTest', isAuthTeacher, testworkController.deleteTest);
 
 router.post('/getTest', isAuth, testworkController.getTest);
 
-router.post('/saveAnswers', isAuthStudent, testworkController.saveAnswers);
-
 
 module.exports = router;

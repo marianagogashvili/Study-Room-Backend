@@ -123,19 +123,6 @@ exports.deleteTest = async (req, res, next) => {
 	}
 };
 
-exports.saveAnswers = async (req, res, next) => {
-	try {
-		const testId = req.body.testId;
-		const answers = req.body.answers;
-		
-	}  catch (err) {
-		console.log(err);
-		if (!err.statusCode) {
-	      err.statusCode = 500;
-	    }
-		next(err);
-	}
-}
 
 exports.getTest = async (req, res, next) => {
 	try {
