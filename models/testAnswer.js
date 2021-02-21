@@ -19,9 +19,12 @@ const testAnswerSchema = new Schema({
 		        ref: 'Question',
 		        required: true
 			},
+			grade: {
+				type: Number
+			},
 			answer: {
 				type: String,
-				required: true
+				required: false
 			}
 		}
 	]
