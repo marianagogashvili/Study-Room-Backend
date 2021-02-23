@@ -28,6 +28,6 @@ const testAnswerSchema = new Schema({
 			}
 		}
 	]
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('TestAnswer', testAnswerSchema);

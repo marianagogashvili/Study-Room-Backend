@@ -13,7 +13,7 @@ exports.saveAnswers = async (req, res, next) => {
 			error.data  = 'You are not a member of this course';
 			throw error;
 		}
-		const answers = JSON.parse(req.body.answers);
+		const answersList = JSON.parse(req.body.answers);
 
 		const testAnswers = new TestAnswer({
 			testwork: testId,
@@ -21,8 +21,37 @@ exports.saveAnswers = async (req, res, next) => {
 		});
 		await testAnswers.save();
 		
-		await TestAnswer.updateOne({_id: testAnswers._id}, { $push: { answers: answers } });
+		await TestAnswer.updateOne({_id: testAnswers._id}, { $push: { answers: answersList } });
+		
+		const answers = await TestAnswer.findOne({_id: testAnswers._id});
 
+		console.log(answers);
+		if (answers) {
+			testwork.questions.forEach( question => {
+	  			let answ = answers.answers.filter(a => a.question.toString() === question._id.toString());
+
+	  			if (question.answer === 'a' || question.answer === 'b'||
+	  				question.answer === 'c' || question.answer === 'd') {
+
+	  				if (answ[0].answer && answ[0].answer === question.answer) {
+	  					answ[0].grade = question.points;
+	  				} else {
+	  					answ[0].grade = 0;
+	  				}
+
+	  			} else if (question.autoCheck === true) {
+
+	  				if (answ[0].answer && answ[0].answer.toLowerCase().trim() === 
+	  					question.answer.toLowerCase().trim()) {
+						answ[0].grade = question.points;
+	  				} else {
+	  					answ[0].grade = 0;
+	  				}
+
+	  			}
+	  		});		
+	  		await answers.save();	
+		}
 		res.status(201).json(testAnswers);
 	}  catch (err) {
 		console.log(err);
@@ -48,36 +77,13 @@ exports.getAnswers = async (req, res, next) => {
 		}	
 
 		let result = [];
+
 		if (answers) {
 			testwork.questions.forEach( question => {
 	  			let answ = answers.answers.filter(a => a.question.toString() === question._id.toString());
 	
-	  			if (answ[0].grade === undefined) {
-
-		  			if (question.answer === 'a' || question.answer === 'b'||
-		  				question.answer === 'c' || question.answer === 'd') {
-
-		  				if (answ[0].answer && answ[0].answer === question.answer) {
-		  					answ[0].grade = question.points;
-		  				} else {
-		  					answ[0].grade = 0;
-		  				}
-
-		  			} else if (question.autoCheck === true) {
-
-		  				if (answ[0].answer && answ[0].answer.toLowerCase().trim() === 
-		  					question.answer.toLowerCase().trim()) {
-							answ[0].grade = question.points;
-		  				} else {
-		  					answ[0].grade = 0;
-		  				}
-
-		  			}
-	  			} 
-
 	  			result.push({question: question, studentAnswer: answ[0].answer, points: answ[0].grade});
 	  		});		
-	  		await answers.save();	
 		}
 
 		res.status(200).json(result);
@@ -89,3 +95,60 @@ exports.getAnswers = async (req, res, next) => {
 		next(err);
 	}
 };
+
+exports.getAnswersForTeacher = async (req, res, next) => {
+	try {
+		const testId = req.body.testId;
+		
+		const answers = await TestAnswer.find({testwork: testId});
+		const testwork = await Testwork.findById(testId).populate({path: 'course', populate: {path: 'students', populate: {path: 'group'}}});
+		const students = testwork.course.students;
+
+		let result = [];
+
+		for(student of students ) {
+			let studentsAnsw = answers.filter(a => a.student.toString() === student._id.toString());
+			let answersWithQuestions = [];
+			let sum = 0;
+			let gradedQuestions = 0;
+			
+			let max = 0;
+			testwork.questions.forEach( question => max += question.points );
+			
+			if (studentsAnsw.length > 0) {
+
+				testwork.questions.forEach( question => {
+  					let answ = studentsAnsw[0].answers.filter(a => a.question.toString() === question._id.toString());
+		  			answersWithQuestions.push({question: question, studentAnswer: answ[0].answer, points: answ[0].grade });
+		  		});	
+
+				studentsAnsw[0].answers.forEach(answ => {
+					if (answ.grade || answ.grade === 0) {
+						sum += answ.grade;
+						gradedQuestions += 1;
+					} 
+				});
+
+			}
+		
+
+			result.push({login: student.login, 
+				fullName: student.fullName, 
+				group: student.group.name, 
+				answers: answersWithQuestions, 
+				sumPoints: studentsAnsw.length ? sum : null,
+				gradedQuestions: gradedQuestions ,
+				max: max,
+				createdAt: studentsAnsw.length > 0 ? studentsAnsw[0].createdAt : null });
+		}
+
+		res.status(200).json(result);
+	}  catch (err) {
+		console.log(err);
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+};
+
