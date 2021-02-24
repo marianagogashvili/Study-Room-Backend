@@ -13,6 +13,8 @@ router.post('/saveAnswers', isAuthStudent, testAnswerController.saveAnswers);
 
 router.post('/getAnswers', isAuth, testAnswerController.getAnswers);
 
+router.post('/updateAnswers', isAuthTeacher, testAnswerController.updateAnswers);
+
 router.post('/getAnswersForTeacher', isAuthTeacher, testAnswerController.getAnswersForTeacher);
 
 module.exports = router;

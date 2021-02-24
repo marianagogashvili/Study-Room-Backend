@@ -111,7 +111,7 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 			let answersWithQuestions = [];
 			let sum = 0;
 			let gradedQuestions = 0;
-			
+
 			let max = 0;
 			testwork.questions.forEach( question => max += question.points );
 			
@@ -132,7 +132,9 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 			}
 		
 
-			result.push({login: student.login, 
+			result.push({
+				_id: student._id, 
+				login: student.login, 
 				fullName: student.fullName, 
 				group: student.group.name, 
 				answers: answersWithQuestions, 
@@ -143,6 +145,27 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 		}
 
 		res.status(200).json(result);
+	}  catch (err) {
+		console.log(err);
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+};
+
+exports.updateAnswers = async (req, res, next) => {
+	try {
+		const testId = req.body.testId;
+		const student = req.body.student;
+		const answers = JSON.parse(req.body.answers);
+		console.log(answers);
+
+		await TestAnswer.updateOne({testwork: testId, student: student}, {$set: {answers: answers}});
+		const answer = await TestAnswer.findOne({testwork: testId, student: student});
+		console.log(answer);
+		
+		res.status(200).json(answer);
 	}  catch (err) {
 		console.log(err);
 		if (!err.statusCode) {
