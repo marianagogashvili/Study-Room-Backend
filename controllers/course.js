@@ -310,6 +310,89 @@ exports.deleteCourse = async (req, res, next) => {
 exports.getFeed = async (req, res, next) => {
 	const courseId = req.body.courseId;
 	let assignments = await Assignment.find({course: courseId});
+
+	let assignmentsWithChildren = [];
+	for ([index, assignment] of assignments.entries()) {
+
+		assignmentsWithChildren.push({value: assignment, children: []});
+
+		let childrenEnd = false;
+
+		while(!childrenEnd) {
+			console.log("loop opp opp");
+			console.log("he", assignment);
+			if (assignment.children.length > 0) {
+				console.log("he2", assignment);
+				for ([index, child] of assignment.children.entries()) {
+					console.log("he3", assignment);
+					// assignment = await Assignment.findById(child.toString()).populate('children');
+					assignment = await Assignment.findById(child.toString());
+
+
+					assignmentsWithChildren[index].children.push({value: assignment, children: []});
+					console.log("he4", assignment);
+				}
+				
+			} else {
+				childrenEnd = true;
+			}
+		}
+
+
+
+		// find all assignments of this course
+		// for each ass in assignments
+			// for each child in ass.children
+				// find assingment with parent as ass
+		// 
+
+		// if (assignment.children.length > 0) {
+
+		// 	for (child of assignment.children) {
+
+		// 		let ass = await Assignment.findById(child.toString()).populate('children');
+		// 		assignmentsWithChildren[index].children.push(ass);
+
+				
+		// 	}
+			
+		// }
+	}
+	// console.log(assignmentsWithChildren);
+
+	let ex = [
+	    { name:"one", children: [
+	    	{ name:"one.one", children: [
+	    		{ name:"one.one.one", children: [] },
+	    		{ name:"one.one.two", children: [] },
+	    		{ name:"one.one.three", children: [] },
+	    	] },
+	    	{ name:"one.two", children: [] }
+	    ] },
+	    { name:"two", children: [
+	    	 { name:"two.one", children: [] }
+	    ] }
+	];
+	kinec = false;
+	// while(!kinec) {
+		for (val of ex) {
+
+			console.log("val1", val);
+			if (val.children) {
+				for (val2 of val.children) {
+
+					console.log("val2", val2);
+					if (val2.children) {
+						for (val3 of val2.children) {
+							console.log("val3", val3);
+						}
+					}
+				}
+			}
+		}
+	// }
+ 	
+	
 	let posts = await Post.find({course: courseId});
 	let testworks = await Testwork.find({course: courseId});
 
@@ -319,7 +402,9 @@ exports.getFeed = async (req, res, next) => {
 	  return new Date(a.createdAt) - new Date(b.createdAt);
 	});
 	// console.log(combinedAr);
-	res.status(200).json(combinedAr);
+	// res.status(200).json(combinedAr);
+	res.status(200).json(assignmentsWithChildren);
+
 }
 
 exports.getStudentGrades = async (req, res, next) => { 

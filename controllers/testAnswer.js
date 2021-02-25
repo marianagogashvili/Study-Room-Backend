@@ -25,7 +25,6 @@ exports.saveAnswers = async (req, res, next) => {
 		
 		const answers = await TestAnswer.findOne({_id: testAnswers._id});
 
-		console.log(answers);
 		if (answers) {
 			testwork.questions.forEach( question => {
 	  			let answ = answers.answers.filter(a => a.question.toString() === question._id.toString());
@@ -103,6 +102,13 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 		const answers = await TestAnswer.find({testwork: testId});
 		const testwork = await Testwork.findById(testId).populate({path: 'course', populate: {path: 'students', populate: {path: 'group'}}});
 		const students = testwork.course.students;
+		
+		if ((testwork.course.creator.toString() !== req.userId)) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = "You are not allowed to do this";
+			throw error;
+		}	
 
 		let result = [];
 
@@ -156,15 +162,29 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 
 exports.updateAnswers = async (req, res, next) => {
 	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			const error = new Error();
+			error.statusCode = 404;
+			error.data  = "You haven't provided answers";
+			throw error;
+		}
 		const testId = req.body.testId;
 		const student = req.body.student;
 		const answers = JSON.parse(req.body.answers);
-		console.log(answers);
+
+		const testwork = await Testwork.findById(testId).populate({ path: 'course' });
+		
+		if ((testwork.course.creator.toString() !== req.userId)) {
+			const error = new Error();
+			error.statusCode = 403;
+			error.data  = "You are not allowed to do this";
+			throw error;
+		}	
 
 		await TestAnswer.updateOne({testwork: testId, student: student}, {$set: {answers: answers}});
 		const answer = await TestAnswer.findOne({testwork: testId, student: student});
-		console.log(answer);
-		
+
 		res.status(200).json(answer);
 	}  catch (err) {
 		console.log(err);

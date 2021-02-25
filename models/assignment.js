@@ -36,7 +36,11 @@ const assignmentSchema = new Schema({
 	deadline: {
 		type: Date,
 		required: false
-	}
+	},
+	children: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Assignment'
+	}]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Assignment', assignmentSchema);
