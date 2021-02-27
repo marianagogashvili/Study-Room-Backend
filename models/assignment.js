@@ -10,6 +10,11 @@ const assignmentSchema = new Schema({
 		type: Number,
 		required: true
 	},
+	hidden: {
+		type: Boolean,
+		required: true,
+		default: false
+	},
 	fileUrl: [{
 			type: String,
 			required: true
@@ -37,10 +42,11 @@ const assignmentSchema = new Schema({
 		type: Date,
 		required: false
 	},
-	children: [{
+	parent: {
 		type: Schema.Types.ObjectId,
-		ref: 'Assignment'
-	}]
+        ref: 'Assignment',
+        required: false
+	}
 }, { timestamps: true });
 
 module.exports = mongoose.model('Assignment', assignmentSchema);

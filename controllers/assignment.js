@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const Assignment = require("../models/assignment");
+
 const Course = require("../models/course");
 const Solution = require("../models/solution");
 
@@ -22,6 +23,8 @@ exports.createAssignment = async (req, res, next) => {
 		const description = req.body.description;
 		const courseId = req.body.courseId;
 		const topicId = req.body.topicId;
+		const parentId = req.body.parentId; 
+		const hidden = req.body.hidden; 
 		const maxGrade = req.body.maxGrade; 
 
 		checkCourseCreator(courseId, req.userId);
@@ -49,11 +52,16 @@ exports.createAssignment = async (req, res, next) => {
 			description: description,
 			fileUrl: fileUrls,
 			course: courseId,
+			hidden: hidden,
 			topic: topicId,
 			maxGrade: maxGrade,
 			availableFrom: availableFrom,
 			deadline: deadline
 		});
+
+		if (parentId !== '') {
+			assignment.parent = parentId;
+		}
 
 		await assignment.save();
 		res.status(201).json(assignment);
