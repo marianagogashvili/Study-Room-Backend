@@ -310,33 +310,39 @@ exports.deleteCourse = async (req, res, next) => {
 exports.getFeed = async (req, res, next) => {
 	const courseId = req.body.courseId;
 	let assignments = await Assignment.find({course: courseId});
-	
-	for ([index, assignment] of assignments.entries()) {
 
-		for ([index2, ass] in assignments.entries()) {
-			if (ass.parent && ass.parent.toString() === assignment._id.toString()) {
-				assignments.splice(index+1, 0, ass);
-				assignments.splice(index2, 0);
-			}
-		}
-	}
+	let sortedAss = [];
+
+	let parentAssignmnents = assignments.filter(ass => !ass.parent);
 
 	let posts = await Post.find({course: courseId});
 	let testworks = await Testwork.find({course: courseId});
 
-	let combinedAr = assignments.concat(posts);
+	let combinedAr = parentAssignmnents.concat(posts);
 	combinedAr = combinedAr.concat(testworks);
 
 	combinedAr.sort(function(a, b){
-		// console.log(a, b);
-	  if (!a.parent) {
 	  	return new Date(a.createdAt) - new Date(b.createdAt);
-	  } 
-	  
 	});
-	// console.log(combinedAr);
-	res.status(200).json(combinedAr);
 
+	for ([index, assignment] of combinedAr.entries()) {
+		let marginLeft = assignment.marginLeft || 0;
+		marginLeft += 20;
+		for ([index2, ass] of assignments.entries()) {
+			
+			if (ass.parent && ass.parent.toString() === assignment._id.toString()) {
+				
+				let assCopy = JSON.parse(JSON.stringify(ass));
+				console.log(assCopy);
+				assCopy.marginLeft = marginLeft;
+				combinedAr.splice(index+1, 0, assCopy);
+			}
+			
+		}
+
+	}
+
+	res.status(200).json(combinedAr);
 }
 
 exports.getStudentGrades = async (req, res, next) => { 

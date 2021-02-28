@@ -98,6 +98,7 @@ exports.editAssignment = async (req, res, next) => {
 	try {
 		const id = req.body.id;
 		const title = req.body.title;
+		const hide = req.body.hide;
 		const description = req.body.description;
 		const maxGrade = req.body.maxGrade;
 
@@ -142,6 +143,7 @@ exports.editAssignment = async (req, res, next) => {
 		assignment.deadline = deadline;
 		assignment.fileUrl = newFiles;
 		assignment.maxGrade = maxGrade;
+		assignment.hidden = hide;
 
 		await assignment.save();
 
@@ -162,6 +164,23 @@ exports.deleteAssignment = async (req, res, next) => {
 	try {
 		const id = req.body.id;
 		const assignment = await Assignment.findById(id)
+
+		const children = await Assignment.find({parent: assignment._id});
+		if (children.length > 0) {
+			if (assignment.parent) {
+				children.forEach(async child => {
+					child.parent = assignment.parent;
+					await child.save();
+				});
+			} else {
+				children.forEach(async child => {
+					child.parent = assignment.parent;
+					await child.save();
+				});
+			}
+		}
+
+		// await children.save();
 
 		if (!assignment) {
 			let err =  new Error();
