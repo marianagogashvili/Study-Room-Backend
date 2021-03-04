@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const Mongoose = require('mongoose')
 
 const Course = require("../models/course");
+const Field = require("../models/field");
 const Student = require("../models/student");
 const Teacher = require("../models/teacher");
 const Assignment = require("../models/assignment");
@@ -21,6 +22,19 @@ let checkCourseOwner = (creator, teacherId) => {
 	}
 }
 
+
+exports.getAllCourses = async (req, res, next) => {
+	const courses = await Course.find();
+	res.status(200).json(courses);
+}
+
+exports.searchCourses = async (req, res, next) => {
+	const courseName = req.body.title;
+	const courses = await Course.find({title: {$regex: courseName.trim().toLowerCase(), $options: "i"}}).populate('field');
+	
+	res.status(200).json(courses);
+}
+
 exports.createCourse = async (req, res, next) => {
 	try {
 		const errors = validationResult(req);
@@ -34,14 +48,20 @@ exports.createCourse = async (req, res, next) => {
 		const title = req.body.title;
 		const description = req.body.description;
 		const key = req.body.key;
+		const opened = req.body.opened;
 		const groupName = req.body.groupName;
+		const fieldName = req.body.fieldName;
 		const students = req.body.students;
+
+		const field = await Field.findOne({name: fieldName});
 
 		const course = new Course({
 			title: title,
 			description: description,
 			key: key,
-			creator: req.userId
+			opened: opened,
+			creator: req.userId,
+			field: field._id
 		});
 
 		await course.save();
@@ -59,6 +79,7 @@ exports.createCourse = async (req, res, next) => {
 
 		if (groupName !== '') {
 			const group = await Group.find({name: groupName});
+
 			const studs = await Student.find({ group: group });
 			studs.forEach(async (s)  => {
 				course.students.push(s);
@@ -81,7 +102,7 @@ exports.createCourse = async (req, res, next) => {
 exports.getCourse = async (req, res, next) => {
 	try {	
 		const id = req.body.id;
-		const course = await Course.findById(Mongoose.Types.ObjectId(id)).populate('creator');
+		const course = await Course.findById(Mongoose.Types.ObjectId(id)).populate('creator').populate('field');
 		if (course) {
 			res.status(200).json(course); 
 		} else {
@@ -109,8 +130,12 @@ exports.editCourse = async (req, res, next) => {
 		}
 		const id = req.body.id;
 		const title = req.body.title;
+		const opened = req.body.opened;
 		const key = req.body.key;
+		const fieldName = req.body.field;
 		const description = req.body.description;
+
+		const field = await Field.findOne({name: fieldName});
 
 		const course = await Course.findById(id);
 
@@ -126,6 +151,8 @@ exports.editCourse = async (req, res, next) => {
 		course.title = title;
 		course.key = key;
 		course.description = description;
+		course.opened = opened;
+		course.field = field;
 		await course.save();
 
 		const result = await Course.findByIdAndUpdate(id, {title: title, key: key, description: description});
@@ -366,3 +393,4 @@ exports.getStudentGrades = async (req, res, next) => {
 		next(err);
 	}
 }
+

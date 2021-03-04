@@ -86,8 +86,15 @@ exports.editTeacher = async (req, res, next) => {
 exports.findStudent = async (req, res, next) => {
 	try {
 		const name = req.body.name;
-		let student = {};
+		// console.log(name);
+		let student;
 		student = await Student.find({'fullName': {$regex:  name , $options: "i"}}).limit(5).populate('group');
+		// console.log(student.length);
+		if (student.length === 0) {
+			student = await Student.find({'login': {$regex:  name , $options: "i"}}).limit(5).populate('group');
+		}
+		console.log(student);
+
 		res.status(201).json(student);
 	} catch (err) {
 		if (!err.statusCode) {

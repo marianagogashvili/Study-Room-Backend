@@ -12,14 +12,29 @@ const courseSchema = new Schema({
 	},
 	key: {
 		type: String,
+		required: false
+	},
+	opened: {
+		type: Boolean,
 		required: true
 	},
+	field: {
+      type: Schema.Types.ObjectId,
+      ref: 'Field',
+      required: true
+    },
 	creator: {
       type: Schema.Types.ObjectId,
       ref: 'Teacher',
       required: true
     },
     students: [
+		{
+		  type: Schema.Types.ObjectId,
+		  ref: 'Student'
+		}
+	],
+	requests: [
 		{
 		  type: Schema.Types.ObjectId,
 		  ref: 'Student'
