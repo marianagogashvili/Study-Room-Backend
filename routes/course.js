@@ -32,7 +32,7 @@ router.put('/editCourse',  [
 ], isAuthTeacher, courseController.editCourse);
 
 // router.post('/getStudentsOfCourse', isAuthTeacher, courseController.getStudents);
-router.post('/getStudentsOfCourse', isAuth, courseController.getStudents);
+// router.post('/getStudentsOfCourse', isAuth, courseController.getStudents);
 
 router.post('/deleteStudentFromCourse', isAuthTeacher, courseController.deleteStudent);
 
@@ -51,5 +51,9 @@ router.post('/deleteCourse', isAuthTeacher, courseController.deleteCourse);
 router.post('/getFeed', isAuth, courseController.getFeed); //isAuthTeacher,
 
 router.post('/getGrades', isAuthStudent, courseController.getStudentGrades);
+
+router.post('/registerStudent', isAuthStudent, courseController.registerStudent);
+
+router.post('/sendStudentRequest', isAuthStudent, courseController.sendRequest);
 
 module.exports = router; 

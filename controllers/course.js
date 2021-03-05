@@ -102,7 +102,13 @@ exports.createCourse = async (req, res, next) => {
 exports.getCourse = async (req, res, next) => {
 	try {	
 		const id = req.body.id;
-		const course = await Course.findById(Mongoose.Types.ObjectId(id)).populate('creator').populate('field');
+		const course = await Course
+			.findById(Mongoose.Types.ObjectId(id))
+			.populate('creator')
+			.populate('field')
+			.populate({ path: 'students', populate: { path: 'group' }, options: {sort: {'fullName': 1} }})
+			.populate({ path: 'requests', populate: { path: 'group' }});
+
 		if (course) {
 			res.status(200).json(course); 
 		} else {
@@ -165,19 +171,19 @@ exports.editCourse = async (req, res, next) => {
 	}
 }
 
-exports.getStudents = async (req, res, next) => {
-	try {
-		const id = req.body.id;
-		const students = await Course.findById(Mongoose.Types.ObjectId(id)).populate({ path: 'students', populate: { path: 'group' }, options: {sort: {'fullName': 1} }});
+// exports.getStudents = async (req, res, next) => {
+// 	try {
+// 		const id = req.body.id;
+// 		const students = await Course.findById(Mongoose.Types.ObjectId(id)).populate({ path: 'students', populate: { path: 'group' }, options: {sort: {'fullName': 1} }});
 
-		res.status(200).json(students); 
-	} catch (err) {
-		if (!err.statusCode) {
-	      err.statusCode = 500;
-	    }
-		next(err);
-	}
-}
+// 		res.status(200).json(students); 
+// 	} catch (err) {
+// 		if (!err.statusCode) {
+// 	      err.statusCode = 500;
+// 	    }
+// 		next(err);
+// 	}
+// }
 
 exports.deleteStudent = async (req, res, next) => {
 	try {
@@ -394,3 +400,28 @@ exports.getStudentGrades = async (req, res, next) => {
 	}
 }
 
+exports.registerStudent = async (req, res, next) => { 
+	try {
+		const courseId = req.body.courseId;
+		await Course.updateOne({_id: courseId}, {$push: {students: req.userId}});
+		res.status(201).json({message: "User added"});
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
+exports.sendRequest = async (req, res, next) => { 
+	try {
+		const courseId = req.body.courseId;
+		await Course.updateOne({_id: courseId}, {$push: {requests: req.userId}});
+		res.status(201).json({message: "User request added"});
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
