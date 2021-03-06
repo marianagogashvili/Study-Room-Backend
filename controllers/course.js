@@ -425,3 +425,44 @@ exports.sendRequest = async (req, res, next) => {
 		next(err);
 	}
 }
+
+exports.acceptStudent = async (req, res, next) => {
+	try {
+		const courseId = req.body.courseId;
+		const studentId = req.body.studentId;
+
+		const course = await Course.findById(courseId);
+		checkCourseOwner(course.creator.toString(), req.userId);
+
+		await Course.updateOne({_id: courseId}, { $push: { students: studentId } });
+		await Course.updateOne({_id: courseId}, { $pull: { requests: studentId } });
+
+		res.status(201).json({message: "Student accepted"});
+
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
+exports.acceptAllStudents = async (req, res, next) => {
+	try {
+		const courseId = req.body.courseId;
+		const course = await Course.findById(courseId);
+		const requests = course.requests;
+
+		checkCourseOwner(course.creator.toString(), req.userId);
+
+		await Course.updateOne({_id: courseId}, {$push: {students: requests}})
+		await Course.updateOne({_id: courseId}, {$set: {requests: []}})
+		
+		res.status(201).json({message: "All students accepted"});
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}

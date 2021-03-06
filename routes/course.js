@@ -56,4 +56,8 @@ router.post('/registerStudent', isAuthStudent, courseController.registerStudent)
 
 router.post('/sendStudentRequest', isAuthStudent, courseController.sendRequest);
 
+router.post('/acceptStudent', isAuthTeacher, courseController.acceptStudent);
+
+router.post('/acceptAllStudents', isAuthTeacher, courseController.acceptAllStudents);
+
 module.exports = router; 
