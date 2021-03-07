@@ -21,4 +21,6 @@ router.put('/editStudent', [
 
 router.get('/getGrades', isAuth, studentController.getGrades);
 
+router.get('/getAssignments', isAuth, studentController.getAssignments);
+
 module.exports = router;

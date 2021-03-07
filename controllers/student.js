@@ -5,6 +5,9 @@ const Mongoose = require('mongoose');
 const Student = require('../models/student');
 const Assignment = require('../models/assignment');
 const Solution = require('../models/solution');
+const Testwork = require('../models/testwork');
+const TestAnswer = require('../models/testAnswer');
+
 
 exports.getStudent = async (req, res, next) => {
 	try {
@@ -107,6 +110,52 @@ exports.getGrades = async (req, res, next) => {
 
 		res.status(200).json(result);
 
+	}  catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
+exports.getAssignments = async (req, res, next) => {
+	try {
+		const student = await Student.findById(req.userId).populate('courses');
+
+		const works = [];
+		for (course of student.courses) {
+			const ass = await Assignment.find({course: course._id});
+			for (a of ass) {
+				const solution = await Solution.findOne({student: req.userId, assignment: a});
+				works.push({assignment: {_id: a._id, title: a.title, deadline: a.deadline, maxGrade: a.maxGrade}, solution: solution, course: course.title, courseId: course._id});
+			}
+			const tests = await Testwork.find({course: course._id});
+			for (test of tests) {
+				let maxGrade = 0;
+				for (question of test.questions) {
+					maxGrade += question.points;
+				}
+				const answer = await TestAnswer.findOne({student: req.userId, testwork: test._id});
+				let pending = false;
+				let grade = 0;
+				if (answer) {
+					answer.answers.forEach(val => {
+						if (!val.grade) {
+							pending = true;
+						}
+						grade += val.grade ? val.grade : 0;
+					});
+				} else {
+					grade = null;
+				}
+				
+				works.push({assignment: {_id: test._id, title: test.title, deadline: test.deadline, maxGrade: maxGrade}, solution: {grade: grade}, pending: pending, course: course.title, courseId: course._id});
+
+			}
+		}
+		// console.log(assignments);
+
+		res.status(200).json({assignments: works, courses: student.courses});
 	}  catch (err) {
 		if (!err.statusCode) {
 	      err.statusCode = 500;
