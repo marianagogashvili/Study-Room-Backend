@@ -103,7 +103,7 @@ exports.getGrades = async (req, res, next) => {
 			assignments = await Assignment.find({course: course._id});
 			assignments.forEach(a => maxGrade += a.maxGrade);
 			solutions = await Solution.find({student: req.userId, assignment: {"$in": assignments} });
-			solutions.forEach(s => grade += s.grade);
+			solutions.forEach(s => grade += s.grade ? s.grade : 0);
 			result.push({id: course._id, title: course.title, grade: grade, maxGrade: maxGrade});
 		}
 
@@ -127,7 +127,17 @@ exports.getAssignments = async (req, res, next) => {
 			const ass = await Assignment.find({course: course._id});
 			for (a of ass) {
 				const solution = await Solution.findOne({student: req.userId, assignment: a});
-				works.push({assignment: {_id: a._id, title: a.title, deadline: a.deadline, maxGrade: a.maxGrade}, solution: solution, course: course.title, courseId: course._id});
+				works.push({
+					work: {
+						type: 'assignment', 
+						_id: a._id, 
+						title: a.title, 
+						deadline: a.deadline, 
+						maxGrade: a.maxGrade,
+						createdAt: a.createdAt}, 
+					solution: solution, 
+					course: course.title, 
+					courseId: course._id});
 			}
 			const tests = await Testwork.find({course: course._id});
 			for (test of tests) {
@@ -149,13 +159,27 @@ exports.getAssignments = async (req, res, next) => {
 					grade = null;
 				}
 				
-				works.push({assignment: {_id: test._id, title: test.title, deadline: test.deadline, maxGrade: maxGrade}, solution: {grade: grade}, pending: pending, course: course.title, courseId: course._id});
+				works.push({
+					work: {
+						type: 'test', 
+						_id: test._id, 
+						title: test.title, 
+						deadline: test.deadline, 
+						maxGrade: maxGrade,
+						createdAt: a.createdAt}, 
+					solution: {grade: grade}, 
+					pending: pending, 
+					course: course.title, 
+					courseId: course._id});
 
 			}
 		}
+		works.sort((a, b) => {
+			return new Date(a.work.createdAt) - new Date(b.work.createdAt);
+		})
 		// console.log(assignments);
 
-		res.status(200).json({assignments: works, courses: student.courses});
+		res.status(200).json({works: works, courses: student.courses});
 	}  catch (err) {
 		if (!err.statusCode) {
 	      err.statusCode = 500;

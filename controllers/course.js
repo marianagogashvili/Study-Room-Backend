@@ -10,6 +10,7 @@ const Assignment = require("../models/assignment");
 const Post = require("../models/post");
 const Solution = require("../models/solution");
 const Testwork = require("../models/testwork");
+const Notification = require("../models/notification");
 
 const Group = require("../models/group");
 
@@ -89,6 +90,15 @@ exports.createCourse = async (req, res, next) => {
 
 		await course.save();
 
+		const notification = new Notification({
+			title: course.title,
+			description: "created",
+			user: req.userId,
+			courseId: course._id,
+			type: "course"
+		});
+		await notification.save();
+
 		res.status(201).json('Course was created successfully');
 		
 	} catch (err) {
@@ -161,6 +171,15 @@ exports.editCourse = async (req, res, next) => {
 		course.field = field;
 		await course.save();
 
+		const notification = new Notification({
+			title: course.title,
+			description: "updated",
+			user: req.userId,
+			courseId: course._id,
+			type: "course"
+		});
+		await notification.save();
+
 		const result = await Course.findByIdAndUpdate(id, {title: title, key: key, description: description});
 		res.status(200).json({message: "Course was updated successfully"}); 
 	} catch (err) {
@@ -170,20 +189,6 @@ exports.editCourse = async (req, res, next) => {
 		next(err);
 	}
 }
-
-// exports.getStudents = async (req, res, next) => {
-// 	try {
-// 		const id = req.body.id;
-// 		const students = await Course.findById(Mongoose.Types.ObjectId(id)).populate({ path: 'students', populate: { path: 'group' }, options: {sort: {'fullName': 1} }});
-
-// 		res.status(200).json(students); 
-// 	} catch (err) {
-// 		if (!err.statusCode) {
-// 	      err.statusCode = 500;
-// 	    }
-// 		next(err);
-// 	}
-// }
 
 exports.deleteStudent = async (req, res, next) => {
 	try {
@@ -212,6 +217,15 @@ exports.deleteStudent = async (req, res, next) => {
 		await student.save();
 		await course.students.pull(studentId);
 		await course.save();
+
+		const notification = new Notification({
+			title: course.title,
+			description: "removed",
+			user: req.userId,
+			type: "student",
+			courseId: course._id
+		});
+		await notification.save();
 
 		res.status(200).json({message: "Student was removed from course"});
 	} catch (err) {
@@ -268,6 +282,16 @@ exports.addStudents = async (req, res, next) => {
 		}
 
 		await course.save();
+
+		const notification = new Notification({
+			title: course.title,
+			description: "added",
+			user: req.userId,
+			type: "students",
+			courseId: course._id
+		});
+		await notification.save();
+
 		res.status(201).json({message: "Students added successfully"});
 	} catch (err) {
 		if (!err.statusCode) {
@@ -302,6 +326,15 @@ exports.deleteStudents = async (req, res, next) => {
 
 		course.students = [];
 		await course.save();
+
+		const notification = new Notification({
+			title: course.title,
+			description: "removed all",
+			user: req.userId,
+			type: "students",
+			courseId: course._id
+		});
+		await notification.save();
 		res.status(200).json({message: "Students deleted"});
 	} catch (err) {
 		if (!err.statusCode) {
@@ -331,6 +364,14 @@ exports.deleteCourse = async (req, res, next) => {
 			await student.save();
 		});
 		await Course.deleteOne({ _id: course._id });
+
+		const notification = new Notification({
+			title: course.title,
+			description: "deleted",
+			user: req.userId,
+			type: "course"
+		});
+		await notification.save();
 		res.status(200).json({message: "Course deleted"});
 	} catch (err) {
 		if (!err.statusCode) {
@@ -404,6 +445,15 @@ exports.registerStudent = async (req, res, next) => {
 	try {
 		const courseId = req.body.courseId;
 		await Course.updateOne({_id: courseId}, {$push: {students: req.userId}});
+		
+		const notification = new Notification({
+			title: course.title,
+			description: "registered",
+			user: req.userId,
+			type: "course",
+			courseId: course._id
+		});
+		await notification.save();
 		res.status(201).json({message: "User added"});
 	} catch (err) {
 		if (!err.statusCode) {
@@ -437,6 +487,15 @@ exports.acceptStudent = async (req, res, next) => {
 		await Course.updateOne({_id: courseId}, { $push: { students: studentId } });
 		await Course.updateOne({_id: courseId}, { $pull: { requests: studentId } });
 
+		const notification = new Notification({
+			title: course.title,
+			description: "accepted",
+			user: req.userId,
+			type: "student",
+			courseId: course._id
+		});
+		await notification.save();
+
 		res.status(201).json({message: "Student accepted"});
 
 	} catch (err) {
@@ -458,6 +517,15 @@ exports.acceptAllStudents = async (req, res, next) => {
 		await Course.updateOne({_id: courseId}, {$push: {students: requests}})
 		await Course.updateOne({_id: courseId}, {$set: {requests: []}})
 		
+		const notification = new Notification({
+			title: course.title,
+			description: "accepted",
+			user: req.userId,
+			type: "students",
+			courseId: course._id
+		});
+		await notification.save();
+
 		res.status(201).json({message: "All students accepted"});
 	} catch (err) {
 		if (!err.statusCode) {

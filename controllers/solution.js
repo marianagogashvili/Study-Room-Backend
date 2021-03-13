@@ -2,6 +2,7 @@ const Solution =  require('../models/solution');
 const Student =  require('../models/student');
 const Assignment =  require('../models/assignment');
 const Course =  require('../models/course');
+const Notification =  require('../models/notification');
 
 const Mongoose = require('mongoose');
 
@@ -30,6 +31,16 @@ exports.createSolution = async (req, res, next) => {
 			fileUrl: files
 		});
 		await solution.save();
+
+		const notification = new Notification({
+			title: assignment.title,
+			description: "added",
+			user: req.userId,
+			type: "solution",
+			courseId: assignment.course
+		});
+		await notification.save();
+
 		res.status(201).json(solution);
 	}  catch(err) {
 		if (!err.statusCode) {
@@ -44,7 +55,7 @@ exports.updateSolutionStudent = async (req, res, next) => {
 		const solutionId = req.body.solutionId;
 		const remove = JSON.parse(req.body.remove);
 
-		const solution = await Solution.findById(solutionId);
+		const solution = await Solution.findById(solutionId).populate('assignment');
 
 		if (solution.student.toString() !== req.userId) {
 			const error = new Error();
@@ -84,6 +95,15 @@ exports.updateSolutionStudent = async (req, res, next) => {
 			throw error;
 		}
 
+		const notification = new Notification({
+			title: solution.assignment.title,
+			description: "updated",
+			user: req.userId,
+			type: "solution",
+			courseId: solution.assignment.course
+		});
+		await notification.save();
+
 		res.status(201).json(solution);
 	}  catch(err) {
 		if (!err.statusCode) {
@@ -113,6 +133,15 @@ exports.updateSolutionTeacher= async (req, res, next) => {
 		solution.grade = grade;
 		solution.comment = comment;
 		await solution.save();
+
+		const notification = new Notification({
+			title: solution.assignment.title,
+			description: "graded",
+			user: req.userId,
+			type: "solution",
+			courseId: solution.assignment.course
+		});
+		await notification.save();
 
 		res.status(201).json(solution);
 	} catch(err) {
@@ -149,7 +178,7 @@ exports.deleteSolution = async (req, res, next) => {
 	try {
 		const solutionId = req.body.solutionId;
 
-		const solution = await Solution.findById(solutionId);
+		const solution = await Solution.findById(solutionId).populate('assignment');
 
 		if (solution.student.toString() !== req.userId) {
 			const error = new Error();
@@ -160,6 +189,15 @@ exports.deleteSolution = async (req, res, next) => {
 
 		solution.fileUrl.forEach(file => fs.unlinkSync(file));
 		await Solution.deleteOne({_id: solutionId});
+
+		const notification = new Notification({
+			title: solution.assignment.title,
+			description: "deleted",
+			user: req.userId,
+			type: "solution",
+			courseId: solution.assignment.course
+		});
+		await notification.save();
 
 		res.status(201).json({message: "Solution deleted"});
 	} catch(err) {

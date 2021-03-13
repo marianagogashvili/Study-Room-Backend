@@ -3,6 +3,7 @@ const Assignment = require("../models/assignment");
 
 const Course = require("../models/course");
 const Solution = require("../models/solution");
+const Notification = require("../models/notification");
 
 const fs = require('fs');
 
@@ -64,6 +65,17 @@ exports.createAssignment = async (req, res, next) => {
 		}
 
 		await assignment.save();
+
+		const notification = new Notification({
+			title: assignment.title,
+			description: "created",
+			user: req.userId,
+			type: "assignment",
+			linkId: assignment._id,
+			courseId: courseId
+		});
+		await notification.save();
+
 		res.status(201).json(assignment);
 	} catch (err) {
 		if (!err.statusCode) {
@@ -150,7 +162,17 @@ exports.editAssignment = async (req, res, next) => {
 		remove.forEach(file => {
 			fs.unlinkSync(file);
 		});
-		
+
+		const notification = new Notification({
+			title: assignment.title,
+			description: "edited",
+			user: req.userId,
+			type: "assignment",
+			linkId: assignment._id,
+			courseId: assignment.course
+		});
+		await notification.save();
+
 		res.status(201).json(assignment);
 	}  catch (err) {
 		if (!err.statusCode) {
@@ -203,6 +225,15 @@ exports.deleteAssignment = async (req, res, next) => {
 			fs.unlinkSync(file);
 		});
 		await Assignment.deleteOne({_id: id});
+
+		const notification = new Notification({
+			title: assignment.title,
+			description: "deleted",
+			user: req.userId,
+			type: "assignment",
+			courseId: assignment.course
+		});
+		await notification.save();
 
 		res.status(200).json({message: "Assignment was deleted"});
 	} catch (err) {

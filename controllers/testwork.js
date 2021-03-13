@@ -44,6 +44,16 @@ exports.createTest = async (req, res, next) => {
 		await test.save();
 
 		await Testwork.updateOne({ _id: test._id }, { $push: { questions: questions } });	
+		
+		const notification = new Notification({
+			title: test.title,
+			description: "created",
+			user: req.userId,
+			type: "test",
+			courseId: test.course
+		});
+		await notification.save();
+
 		res.status(201).json({message: "Test created"});
 	}  catch (err) {
 		console.log(err);
@@ -87,6 +97,15 @@ exports.updateTest = async (req, res, next) => {
 		await testwork.save();
 		await Testwork.updateOne({ _id: testwork._id }, { $set: { questions: questions } });	
 
+		const notification = new Notification({
+			title: testwork.title,
+			description: "updated",
+			user: req.userId,
+			type: "test",
+			courseId: testwork.course
+		});
+		await notification.save();
+
 		res.status(201).json({message: "Test updated"});
 	}  catch (err) {
 		console.log(err);
@@ -112,8 +131,17 @@ exports.deleteTest = async (req, res, next) => {
 		}		
 
 		await Testwork.deleteOne({_id: testwork._id}) 
-		res.status(201).json({message: "Test deleted"});
 
+		const notification = new Notification({
+			title: testwork.title,
+			description: "deleted",
+			user: req.userId,
+			type: "test",
+			courseId: testwork.course
+		});
+		await notification.save();
+
+		res.status(201).json({message: "Test deleted"});
 	}  catch (err) {
 		console.log(err);
 		if (!err.statusCode) {

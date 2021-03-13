@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const fs = require('fs');
 const Post = require("../models/post");
 const Course = require("../models/course");
+const Notification = require("../models/notification");
 
 exports.createPost = async (req, res, next) => {
 	const title = req.body.title;
@@ -31,6 +32,17 @@ exports.createPost = async (req, res, next) => {
 		link: link
 	});
 	await post.save();
+
+	const notification = new Notification({
+		title: post.title,
+		description: "created",
+		user: req.userId,
+		type: "post",
+		linkId: post._id,
+		courseId: post.course
+	});
+	await notification.save();
+
 	res.status(200).json(post);
 };
 
@@ -58,5 +70,15 @@ exports.deletePost = async (req, res, next) => {
 	}
 
 	await Post.deleteOne({_id: postId});
+
+	const notification = new Notification({
+		title: post.title,
+		description: "deleted",
+		user: req.userId,
+		type: "post",
+		courseId: post.course
+	});
+	await notification.save();
+
 	res.status(200).json({message: "Post deleted"});
 };
