@@ -423,12 +423,16 @@ exports.getStudentGrades = async (req, res, next) => {
 	try {
 		const courseId = req.body.id;
 
-		const assignments = await Assignment.find({course: courseId});
+		const assignments = await Assignment.find({course: courseId}).populate('topic');
 		let result = [];
 
 		for (const assignment of assignments) {
-			const solution = await Solution.findOne({assignment: assignment._id, student: req.userId});
-			result.push({id: assignment._id, title: assignment.title, createdAt: assignment.createdAt, deadline: assignment.deadline, maxGrade: assignment.maxGrade, grade: solution ? solution.grade : null, comment: solution ? solution.comment : null});
+			if (assignment.hidden === true || assignment.topic.hidden === true) {
+			} else {
+				const solution = await Solution.findOne({assignment: assignment._id, student: req.userId});
+				result.push({id: assignment._id, title: assignment.title, createdAt: assignment.createdAt, deadline: assignment.deadline, maxGrade: assignment.maxGrade, grade: solution ? solution.grade : null, comment: solution ? solution.comment : null});	
+
+			}
 		}
 
 		console.log(result);

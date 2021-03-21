@@ -14,6 +14,7 @@ const topicRoutes = require('./routes/topic');
 const assignmentRoutes = require('./routes/assignment');
 const solutionRoutes = require('./routes/solution');
 const postRoutes = require('./routes/post');
+const articleRoutes = require('./routes/article');
 const testworkRoutes = require('./routes/testwork');
 const testAnswerRoutes = require('./routes/testAnswer');
 
@@ -52,6 +53,7 @@ const fileStorage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'application/pdf' || 
       file.mimetype === 'application/msword' ||
+      file.mimetype === 'application/vnd.ms-powerpoint' ||
       file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     cb(null, true);
   } else {
@@ -77,6 +79,7 @@ app.use('/topic', topicRoutes);
 app.use('/assignment', assignmentRoutes);
 app.use('/solution', solutionRoutes);
 app.use('/post', postRoutes);
+app.use('/article', articleRoutes);
 app.use('/testwork', testworkRoutes);
 app.use('/testAnswer', testAnswerRoutes);
 

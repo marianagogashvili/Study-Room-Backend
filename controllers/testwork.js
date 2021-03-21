@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Testwork = require("../models/testwork");
 const Course = require("../models/course");
+const Notification = require("../models/notification");
 
 exports.createTest = async (req, res, next) => {
 	try {
