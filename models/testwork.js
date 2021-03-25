@@ -44,6 +44,12 @@ const testworkSchema = new Schema({
 			d: {
 				type: String
 			},
+			e: {
+				type: String
+			},
+			f: {
+				type: String
+			},
 			autoCheck: {
 				type: Boolean
 			},
@@ -53,7 +59,27 @@ const testworkSchema = new Schema({
 			},
 			answer: {
 				type: String,
-				required: true
+				required: false
+			},
+			answers: {
+				a: {
+					type: Boolean
+				},
+				b: {
+					type: Boolean
+				},
+				c: {
+					type: Boolean
+				},
+				d: {
+					type: Boolean
+				},
+				e: {
+					type: Boolean
+				},
+				f: {
+					type: Boolean
+				}
 			}
 		}
 	]

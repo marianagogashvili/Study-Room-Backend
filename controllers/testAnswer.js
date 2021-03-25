@@ -20,6 +20,12 @@ exports.saveAnswers = async (req, res, next) => {
 			student: req.userId
 		});
 		await testAnswers.save();
+
+		// console.log("=============");
+		// console.log(answersList);
+		// if (answersList.answers) {
+		// 	answersList.answers = JSON.parse(answersList.answers);
+		// }
 		
 		await TestAnswer.updateOne({_id: testAnswers._id}, { $push: { answers: answersList } });
 		

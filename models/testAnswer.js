@@ -25,6 +25,26 @@ const testAnswerSchema = new Schema({
 			answer: {
 				type: String,
 				required: false
+			},
+			answers: {
+				a: {
+					type: Boolean
+				},
+				b: {
+					type: Boolean
+				},
+				c: {
+					type: Boolean
+				},
+				d: {
+					type: Boolean
+				},
+				e: {
+					type: Boolean
+				},
+				f: {
+					type: Boolean
+				}
 			}
 		}
 	]
