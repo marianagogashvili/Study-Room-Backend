@@ -1,4 +1,5 @@
 const Article = require("../models/article");
+const Course = require("../models/course");
 
 exports.createArticle = async (req, res, next) => {
 	try {
@@ -7,8 +8,9 @@ exports.createArticle = async (req, res, next) => {
 		const topicId = req.body.topicId;
 		const courseId = req.body.courseId;
 
-		const course = Course.findById(courseId);
-		if (req.user !== course.creator.toString()) {
+		const course = await Course.findById(courseId);
+		// console.log(course);
+		if (req.userId !== course.creator.toString()) {
 			const error = new Error();
 			error.data = "You are not allowed to do this";
 			error.status = 403;
@@ -38,8 +40,8 @@ exports.updateArticle = async (req, res, next) => {
 		const title = req.body.title;
 		const text = req.body.text;
 
-		const article = Article.findById(articleId).populate('course');
-		if (req.user !== article.course.creator.toString()) {
+		const article = await Article.findById(articleId).populate('course');
+		if (req.userId !== article.course.creator.toString()) {
 			const error = new Error();
 			error.data = "You are not allowed to do this";
 			error.status = 403;
@@ -64,8 +66,8 @@ exports.deleteArticle = async (req, res, next) => {
 	try {
 		const articleId = req.body.articleId;
 
-		const article = Article.findById(articleId).populate('course');
-		if (req.user !== article.course.creator.toString()) {
+		const article = await Article.findById(articleId).populate('course');
+		if (req.userId !== article.course.creator.toString()) {
 			const error = new Error();
 			error.data = "You are not allowed to do this";
 			error.status = 403;
