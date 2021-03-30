@@ -9,6 +9,8 @@ const isAuth = require('../middleware/is-auth');
 
 router.post('/createArticle', isAuthTeacher, articleController.createArticle);
 
+router.post('/getArticle', isAuth, articleController.getArticle);
+
 router.post('/editArticle', isAuthTeacher, articleController.updateArticle);
 
 router.post('/deleteArticle', isAuthTeacher, articleController.deleteArticle);

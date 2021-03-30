@@ -34,6 +34,31 @@ exports.createArticle = async (req, res, next) => {
 	}
 };
 
+
+exports.getArticle = async (req, res, next) => {
+	try {
+		const articleId = req.body.id;
+
+		const article = await Article.findById(articleId).populate('course');
+		if (req.userId !== article.course.creator.toString() &&
+			!article.course.students.includes(req.userId)) {
+			const error = new Error();
+			error.data = "You are not allowed to do this";
+			error.status = 403;
+			throw error;
+		}
+		console.log(article);
+
+		res.status(201).json(article);
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+};
+
+
 exports.updateArticle = async (req, res, next) => {
 	try {
 		const articleId = req.body.articleId;

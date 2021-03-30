@@ -7,6 +7,7 @@ const Field = require("../models/field");
 const Student = require("../models/student");
 const Teacher = require("../models/teacher");
 const Assignment = require("../models/assignment");
+const Article = require("../models/article");
 const Post = require("../models/post");
 const Solution = require("../models/solution");
 const Testwork = require("../models/testwork");
@@ -390,10 +391,12 @@ exports.getFeed = async (req, res, next) => {
 	let parentAssignmnents = assignments.filter(ass => !ass.parent);
 
 	let posts = await Post.find({course: courseId});
+	let articles = await Article.find({course: courseId});
 	let testworks = await Testwork.find({course: courseId});
 
 	let combinedAr = parentAssignmnents.concat(posts);
 	combinedAr = combinedAr.concat(testworks);
+	combinedAr = combinedAr.concat(articles);
 
 	combinedAr.sort(function(a, b){
 	  	return new Date(a.createdAt) - new Date(b.createdAt);
