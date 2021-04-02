@@ -18,13 +18,32 @@ let checkCourseCreator = async (courseId, teacherId) => {
 	}
 }
 
+exports.addMargin = async (req, res, next) => {
+	try {
+		const assignmentId = req.body.id;
+		const val = req.body.value;
+
+
+		const assignment = await Assignment.findById(assignmentId);
+		checkCourseCreator(assignment.course, req.userId);
+
+		await Assignment.updateOne({_id: assignmentId}, { $inc: {margin: val} });
+		res.status(201).json("Moved");
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
 exports.createAssignment = async (req, res, next) => {
 	try {
 		const title = req.body.title;
 		const description = req.body.description;
 		const courseId = req.body.courseId;
 		const topicId = req.body.topicId;
-		const parentId = req.body.parentId; 
+		// const parentId = req.body.parentId; 
 		const hidden = req.body.hidden; 
 		const maxGrade = req.body.maxGrade; 
 
@@ -60,9 +79,9 @@ exports.createAssignment = async (req, res, next) => {
 			deadline: deadline
 		});
 
-		if (parentId !== '') {
-			assignment.parent = parentId;
-		}
+		// if (parentId !== '') {
+		// 	assignment.parent = parentId;
+		// }
 
 		await assignment.save();
 
@@ -187,20 +206,20 @@ exports.deleteAssignment = async (req, res, next) => {
 		const id = req.body.id;
 		const assignment = await Assignment.findById(id)
 
-		const children = await Assignment.find({parent: assignment._id});
-		if (children.length > 0) {
-			if (assignment.parent) {
-				children.forEach(async child => {
-					child.parent = assignment.parent;
-					await child.save();
-				});
-			} else {
-				children.forEach(async child => {
-					child.parent = assignment.parent;
-					await child.save();
-				});
-			}
-		}
+		// const children = await Assignment.find({parent: assignment._id});
+		// if (children.length > 0) {
+		// 	if (assignment.parent) {
+		// 		children.forEach(async child => {
+		// 			child.parent = assignment.parent;
+		// 			await child.save();
+		// 		});
+		// 	} else {
+		// 		children.forEach(async child => {
+		// 			child.parent = assignment.parent;
+		// 			await child.save();
+		// 		});
+		// 	}
+		// }
 
 		// await children.save();
 

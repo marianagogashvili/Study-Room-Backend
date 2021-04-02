@@ -42,11 +42,15 @@ const assignmentSchema = new Schema({
 		type: Date,
 		required: false
 	},
-	parent: {
-		type: Schema.Types.ObjectId,
-        ref: 'Assignment',
-        required: false
+	margin: {
+		type: Number,
+		default: 0
 	}
+	// parent: {
+	// 	type: Schema.Types.ObjectId,
+ //        ref: 'Assignment',
+ //        required: false
+	// }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Assignment', assignmentSchema);

@@ -386,15 +386,15 @@ exports.getFeed = async (req, res, next) => {
 	const courseId = req.body.courseId;
 	let assignments = await Assignment.find({course: courseId});
 
-	let sortedAss = [];
+	// let sortedAss = [];
 
-	let parentAssignmnents = assignments.filter(ass => !ass.parent);
+	// let parentAssignmnents = assignments.filter(ass => !ass.parent);
 
 	let posts = await Post.find({course: courseId});
 	let articles = await Article.find({course: courseId});
 	let testworks = await Testwork.find({course: courseId});
 
-	let combinedAr = parentAssignmnents.concat(posts);
+	let combinedAr = assignments.concat(posts);
 	combinedAr = combinedAr.concat(testworks);
 	combinedAr = combinedAr.concat(articles);
 
@@ -402,22 +402,22 @@ exports.getFeed = async (req, res, next) => {
 	  	return new Date(a.createdAt) - new Date(b.createdAt);
 	});
 
-	for ([index, assignment] of combinedAr.entries()) {
-		let marginLeft = assignment.marginLeft || 0;
-		marginLeft += 20;
-		for ([index2, ass] of assignments.entries()) {
+	// for ([index, assignment] of combinedAr.entries()) {
+	// 	let marginLeft = assignment.marginLeft || 0;
+	// 	marginLeft += 20;
+	// 	for ([index2, ass] of assignments.entries()) {
 			
-			if (ass.parent && ass.parent.toString() === assignment._id.toString()) {
+	// 		if (ass.parent && ass.parent.toString() === assignment._id.toString()) {
 				
-				let assCopy = JSON.parse(JSON.stringify(ass));
-				console.log(assCopy);
-				assCopy.marginLeft = marginLeft;
-				combinedAr.splice(index+1, 0, assCopy);
-			}
+	// 			let assCopy = JSON.parse(JSON.stringify(ass));
+	// 			console.log(assCopy);
+	// 			assCopy.marginLeft = marginLeft;
+	// 			combinedAr.splice(index+1, 0, assCopy);
+	// 		}
 			
-		}
+	// 	}
 
-	}
+	// }
 
 	res.status(200).json(combinedAr);
 }

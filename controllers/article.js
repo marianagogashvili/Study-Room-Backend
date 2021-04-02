@@ -61,7 +61,7 @@ exports.getArticle = async (req, res, next) => {
 
 exports.updateArticle = async (req, res, next) => {
 	try {
-		const articleId = req.body.articleId;
+		const articleId = req.body.id;
 		const title = req.body.title;
 		const text = req.body.text;
 
@@ -89,7 +89,7 @@ exports.updateArticle = async (req, res, next) => {
 
 exports.deleteArticle = async (req, res, next) => {
 	try {
-		const articleId = req.body.articleId;
+		const articleId = req.body.id;
 
 		const article = await Article.findById(articleId).populate('course');
 		if (req.userId !== article.course.creator.toString()) {

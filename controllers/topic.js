@@ -4,6 +4,9 @@ const fs = require('fs');
 const Topic = require("../models/topic");
 const Course = require("../models/course");
 const Assignment = require("../models/assignment");
+const Article = require("../models/article");
+const Testwork = require("../models/testwork");
+const Solution = require("../models/assignment");
 const Post = require("../models/post");
 
 exports.createTopic = async (req, res, next) => {
@@ -175,6 +178,10 @@ exports.deleteTopic = async (req, res, next) => {
 
 			await Post.deleteOne({_id: post._id});
 		});
+
+		await Article.deleteMany({topic: topicId});
+		await Testwork.deleteMany({topic: topicId});
+
 		await Topic.deleteOne({_id: topicId});
 		await Topic.updateMany({num: {$gt: number}}, { $inc: { num: -1 } } );
 

@@ -16,6 +16,8 @@ router.post('/createPost', [
 
 router.post('/getPostsByCourse', isAuth, postController.getPostsByCourse);
 
+router.post('/addMargin', isAuth, postController.addMargin);
+
 router.post('/deletePost', isAuthTeacher, postController.deletePost);
 
 module.exports = router;
