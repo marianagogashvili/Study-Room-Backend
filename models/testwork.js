@@ -26,6 +26,10 @@ const testworkSchema = new Schema({
         ref: 'Course',
         required: true
 	},
+	margin: {
+		type: Number,
+		default: 0
+	},
 	questions: [
 		{
 			title: {
@@ -58,8 +62,7 @@ const testworkSchema = new Schema({
 				required: true
 			},
 			answer: {
-				type: String,
-				required: false
+				type: String
 			},
 			answers: {
 				a: {

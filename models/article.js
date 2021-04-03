@@ -15,6 +15,10 @@ const articleSchema = new Schema({
         ref: 'Course',
         required: true
 	},
+	margin: {
+		type: Number,
+		default: 0
+	},
 	topic: {
 		type: Schema.Types.ObjectId,
         ref: 'Topic',

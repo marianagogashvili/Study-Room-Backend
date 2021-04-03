@@ -21,18 +21,13 @@ exports.saveAnswers = async (req, res, next) => {
 		});
 		await testAnswers.save();
 
-		// console.log("=============");
-		// console.log(answersList);
-		// if (answersList.answers) {
-		// 	answersList.answers = JSON.parse(answersList.answers);
-		// }
-		
 		await TestAnswer.updateOne({_id: testAnswers._id}, { $push: { answers: answersList } });
 		
 		const answers = await TestAnswer.findOne({_id: testAnswers._id});
 
 		if (answers) {
 			testwork.questions.forEach( question => {
+
 	  			let answ = answers.answers.filter(a => a.question.toString() === question._id.toString());
 
 	  			if (question.answer === 'a' || question.answer === 'b'||
@@ -49,6 +44,28 @@ exports.saveAnswers = async (req, res, next) => {
 	  				if (answ[0].answer && answ[0].answer.toLowerCase().trim() === 
 	  					question.answer.toLowerCase().trim()) {
 						answ[0].grade = question.points;
+	  				} else {
+	  					answ[0].grade = 0;
+	  				}
+
+	  			} else if (!question.autoCheck && !question.answer) {
+	  				if (answ[0].answers) {
+		  				let pointPerOne = question.points / Object.keys(question.answers).length;
+
+		  				let points = 0;
+		  				for ([val, a] of Object.entries(question.answers)) {
+
+		  					if (question.answers[val] === answ[0].answers[val]) {
+		  						points += pointPerOne;
+		  					} else {
+		  						points -= pointPerOne;
+		  					}
+		  				}
+		  				if (points < 0) {
+		  					points = 0;
+		  				}
+
+		  				answ[0].grade = Math.round(points * 10) / 10;
 	  				} else {
 	  					answ[0].grade = 0;
 	  				}
@@ -87,7 +104,7 @@ exports.getAnswers = async (req, res, next) => {
 			testwork.questions.forEach( question => {
 	  			let answ = answers.answers.filter(a => a.question.toString() === question._id.toString());
 	
-	  			result.push({question: question, studentAnswer: answ[0].answer, points: answ[0].grade});
+	  			result.push({question: question, studentAnswer: answ[0].answer || answ[0].answers, points: answ[0].grade});
 	  		});		
 		}
 

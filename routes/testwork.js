@@ -11,6 +11,8 @@ const isAuth = require('../middleware/is-auth');
 
 router.post('/createTest', isAuthTeacher, testworkController.createTest);
 
+router.post('/addMargin', isAuthTeacher, testworkController.addMargin);
+
 router.post('/updateTest', isAuthTeacher, testworkController.updateTest);
 
 router.post('/deleteTest', isAuthTeacher, testworkController.deleteTest);

@@ -3,25 +3,21 @@ const Testwork = require("../models/testwork");
 const Course = require("../models/course");
 const Notification = require("../models/notification");
 
+let checkCourseCreator = async (courseId, teacherId) => {
+	const course = await Course.findById(courseId);
+	if (course.creator.toString() !== teacherId) {
+		const err = new Error();
+		err.data = "You are not allowed to do this";
+		err.status = 403;
+		throw err;
+	}
+};
+
 exports.createTest = async (req, res, next) => {
 	try {
 		const courseId = req.body.courseId;
-		const course = await Course.findById(courseId);
-		
-		if (!course) {
-			const error = new Error();
-			error.statusCode = 422;
-			error.data  = "Course does not exist";
-			throw error;
-		}
 
-		if ((course.creator.toString() !== req.userId) &&
-			(!course.students.includes(req.userId))) {
-			const error = new Error();
-			error.statusCode = 422;
-			error.data  = "You are not allowed to do this";
-			throw error;
-		}		
+		checkCourseCreator(courseId, req.userId)
 
 		const title = req.body.title;
 		const questions = req.body.questions;
@@ -31,7 +27,6 @@ exports.createTest = async (req, res, next) => {
 		const timeRestriction = req.body.timeRestriction;
 		const topicId = req.body.topicId;
 
-		console.log(topicId);
 		
 		const test = new Testwork({
 			title: title,
@@ -65,6 +60,26 @@ exports.createTest = async (req, res, next) => {
 	}
 };
 
+
+exports.addMargin = async (req, res, next) => {
+	try {
+		const testId = req.body.id;
+		const val = req.body.value;
+
+		const testwork = await Testwork.findById(testId);
+		checkCourseCreator(testwork.course, req.userId);
+
+		await Testwork.updateOne({_id: testId}, { $inc: {margin: val} });
+		res.status(201).json("Moved");
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
+
+
 exports.updateTest = async (req, res, next) => {
 	try {
 		const testwork = await Testwork.findById(req.body.testId).populate('course');
@@ -77,15 +92,7 @@ exports.updateTest = async (req, res, next) => {
 			throw error;
 		}
 
-		const course = await Course.findById(testwork.course);
-
-		if ((course.creator.toString() !== req.userId) &&
-			(!course.students.includes(req.userId))) {
-			const error = new Error();
-			error.statusCode = 422;
-			error.data  = "You are not allowed to do this";
-			throw error;
-		}	
+		checkCourseCreator(testwork.course, req.userId);
 
 		let deadline = new Date(req.body.deadline).setHours(new Date(req.body.deadline).getHours() + 2);
 
@@ -121,15 +128,7 @@ exports.deleteTest = async (req, res, next) => {
 	try {
 		const testwork = await Testwork.findById(req.body.testId);
 
-		const course = await Course.findById(testwork.course);
-
-		if ((course.creator.toString() !== req.userId) &&
-			(!course.students.includes(req.userId))) {
-			const error = new Error();
-			error.statusCode = 422;
-			error.data  = "You are not allowed to do this";
-			throw error;
-		}		
+		checkCourseCreator(testwork.course, req.courseId);
 
 		await Testwork.deleteOne({_id: testwork._id}) 
 
@@ -156,7 +155,7 @@ exports.deleteTest = async (req, res, next) => {
 exports.getTest = async (req, res, next) => {
 	try {
 		const testId = req.body.testId;
-		const testwork = await Testwork.findById(testId);
+		const testwork = await Testwork.findById(testId).populate('course');
 		if (!testwork) {
 			const error = new Error();
 			error.statusCode = 422;
@@ -164,10 +163,8 @@ exports.getTest = async (req, res, next) => {
 			throw error;
 		}
 
-		const course = await Course.findById(testwork.course);
-
-		if ((course.creator.toString() !== req.userId) &&
-			(!course.students.includes(req.userId))) {
+		if ((testwork.course.creator.toString() !== req.userId) &&
+			(!testwork.course.students.includes(req.userId))) {
 			const error = new Error();
 			error.statusCode = 422;
 			error.data  = "You are not allowed to do this";
