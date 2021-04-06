@@ -43,10 +43,11 @@ exports.createTest = async (req, res, next) => {
 		
 		const notification = new Notification({
 			title: test.title,
-			description: "created",
+			description: "You've created a test",
 			user: req.userId,
 			type: "test",
-			courseId: test.course
+			courseId: test.course,
+			linkId: test._id
 		});
 		await notification.save();
 
@@ -107,10 +108,11 @@ exports.updateTest = async (req, res, next) => {
 
 		const notification = new Notification({
 			title: testwork.title,
-			description: "updated",
+			description: "You've updated a test",
 			user: req.userId,
 			type: "test",
-			courseId: testwork.course
+			courseId: testwork.course,
+			linkId: testwork._id
 		});
 		await notification.save();
 
@@ -129,17 +131,10 @@ exports.deleteTest = async (req, res, next) => {
 		const testwork = await Testwork.findById(req.body.testId);
 
 		checkCourseCreator(testwork.course, req.courseId);
+		
+		await Notification.deleteMany({linkId: testwork._id});
 
 		await Testwork.deleteOne({_id: testwork._id}) 
-
-		const notification = new Notification({
-			title: testwork.title,
-			description: "deleted",
-			user: req.userId,
-			type: "test",
-			courseId: testwork.course
-		});
-		await notification.save();
 
 		res.status(201).json({message: "Test deleted"});
 	}  catch (err) {

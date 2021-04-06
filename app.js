@@ -39,10 +39,11 @@ const fileStorage = multer.diskStorage({
       cb(null, 'solutionsFolder')
     } else if (req.body.dest && req.body.dest === 'post') {
       cb(null, 'postsFolder')
+    } else if (req.body.dest && req.body.dest === 'reading') {
+      cb(null, 'readingsFolder')
     } else {
       cb(null, 'assignmentsFolder')
     }
-    
   },
   filename: (req, file, cb) => {
     console.log(file);

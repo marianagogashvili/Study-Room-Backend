@@ -17,5 +17,6 @@ router.post('/updateArticle', isAuthTeacher, articleController.updateArticle);
 
 router.post('/deleteArticle', isAuthTeacher, articleController.deleteArticle);
 
+router.post('/uploadFolder', isAuthTeacher, articleController.uploadFolder);
 
 module.exports = router;

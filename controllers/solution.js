@@ -34,10 +34,11 @@ exports.createSolution = async (req, res, next) => {
 
 		const notification = new Notification({
 			title: assignment.title,
-			description: "added",
+			description: "You've added solution to assignment",
 			user: req.userId,
 			type: "solution",
-			courseId: assignment.course
+			courseId: assignment.course,
+			linkId: solution._id
 		});
 		await notification.save();
 
@@ -97,9 +98,10 @@ exports.updateSolutionStudent = async (req, res, next) => {
 
 		const notification = new Notification({
 			title: solution.assignment.title,
-			description: "updated",
+			description: "You've updated solution to assignment",
 			user: req.userId,
 			type: "solution",
+			linkId: solution._id,
 			courseId: solution.assignment.course
 		});
 		await notification.save();
@@ -121,7 +123,7 @@ exports.updateSolutionTeacher= async (req, res, next) => {
 		const grade = req.body.grade;
 		const comment = req.body.comment;
 
-		const solution = await Solution.findById(solutionId).populate({path: 'assignment', populate: {path: 'course'}});
+		const solution = await Solution.findById(solutionId).populate({path: 'assignment', populate: {path: 'course', populate: {path: 'creator'}}});
 
 		if (solution.assignment.course.creator.toString() !== req.userId) {
 			const error = new Error();
@@ -136,9 +138,10 @@ exports.updateSolutionTeacher= async (req, res, next) => {
 
 		const notification = new Notification({
 			title: solution.assignment.title,
-			description: "graded",
-			user: req.userId,
+			description: solution.assignment.course.creator.fullName + " graded your solution to assignment",
+			user: solution.student,
 			type: "solution",
+			linkId: solution._id,
 			courseId: solution.assignment.course
 		});
 		await notification.save();
@@ -188,16 +191,20 @@ exports.deleteSolution = async (req, res, next) => {
 		}
 
 		solution.fileUrl.forEach(file => fs.unlinkSync(file));
-		await Solution.deleteOne({_id: solutionId});
 
 		const notification = new Notification({
 			title: solution.assignment.title,
-			description: "deleted",
+			description: "You've deleted solution to assignment",
 			user: req.userId,
-			type: "solution",
-			courseId: solution.assignment.course
+			type: "assignment",
+			courseId: solution.assignment.course,
+			linkId: solution.assignment._id
 		});
 		await notification.save();
+
+		await Solution.deleteOne({_id: solutionId});
+
+		await Notification.deleteMany({linkId: solution._id});
 
 		res.status(201).json({message: "Solution deleted"});
 	} catch(err) {
@@ -206,6 +213,4 @@ exports.deleteSolution = async (req, res, next) => {
 	    }
 		next(err);
 	}
-	
-	
 }

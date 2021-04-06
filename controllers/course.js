@@ -386,10 +386,6 @@ exports.getFeed = async (req, res, next) => {
 	const courseId = req.body.courseId;
 	let assignments = await Assignment.find({course: courseId});
 
-	// let sortedAss = [];
-
-	// let parentAssignmnents = assignments.filter(ass => !ass.parent);
-
 	let posts = await Post.find({course: courseId});
 	let articles = await Article.find({course: courseId});
 	let testworks = await Testwork.find({course: courseId});
@@ -401,23 +397,6 @@ exports.getFeed = async (req, res, next) => {
 	combinedAr.sort(function(a, b){
 	  	return new Date(a.createdAt) - new Date(b.createdAt);
 	});
-
-	// for ([index, assignment] of combinedAr.entries()) {
-	// 	let marginLeft = assignment.marginLeft || 0;
-	// 	marginLeft += 20;
-	// 	for ([index2, ass] of assignments.entries()) {
-			
-	// 		if (ass.parent && ass.parent.toString() === assignment._id.toString()) {
-				
-	// 			let assCopy = JSON.parse(JSON.stringify(ass));
-	// 			console.log(assCopy);
-	// 			assCopy.marginLeft = marginLeft;
-	// 			combinedAr.splice(index+1, 0, assCopy);
-	// 		}
-			
-	// 	}
-
-	// }
 
 	res.status(200).json(combinedAr);
 }

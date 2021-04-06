@@ -43,7 +43,6 @@ exports.createAssignment = async (req, res, next) => {
 		const description = req.body.description;
 		const courseId = req.body.courseId;
 		const topicId = req.body.topicId;
-		// const parentId = req.body.parentId; 
 		const hidden = req.body.hidden; 
 		const maxGrade = req.body.maxGrade; 
 
@@ -79,15 +78,11 @@ exports.createAssignment = async (req, res, next) => {
 			deadline: deadline
 		});
 
-		// if (parentId !== '') {
-		// 	assignment.parent = parentId;
-		// }
-
 		await assignment.save();
 
 		const notification = new Notification({
 			title: assignment.title,
-			description: "created",
+			description: "You've created an assignment",
 			user: req.userId,
 			type: "assignment",
 			linkId: assignment._id,
@@ -184,7 +179,7 @@ exports.editAssignment = async (req, res, next) => {
 
 		const notification = new Notification({
 			title: assignment.title,
-			description: "edited",
+			description: "You've edited an assignment",
 			user: req.userId,
 			type: "assignment",
 			linkId: assignment._id,
@@ -206,23 +201,6 @@ exports.deleteAssignment = async (req, res, next) => {
 		const id = req.body.id;
 		const assignment = await Assignment.findById(id)
 
-		// const children = await Assignment.find({parent: assignment._id});
-		// if (children.length > 0) {
-		// 	if (assignment.parent) {
-		// 		children.forEach(async child => {
-		// 			child.parent = assignment.parent;
-		// 			await child.save();
-		// 		});
-		// 	} else {
-		// 		children.forEach(async child => {
-		// 			child.parent = assignment.parent;
-		// 			await child.save();
-		// 		});
-		// 	}
-		// }
-
-		// await children.save();
-
 		if (!assignment) {
 			let err =  new Error();
 			err.statusCode = 404;
@@ -243,16 +221,10 @@ exports.deleteAssignment = async (req, res, next) => {
 		assignment.fileUrl.forEach(file => {
 			fs.unlinkSync(file);
 		});
-		await Assignment.deleteOne({_id: id});
 
-		const notification = new Notification({
-			title: assignment.title,
-			description: "deleted",
-			user: req.userId,
-			type: "assignment",
-			courseId: assignment.course
-		});
-		await notification.save();
+		await Notification.deleteMany({linkId: assignment._id});
+
+		await Assignment.deleteOne({_id: id});
 
 		res.status(200).json({message: "Assignment was deleted"});
 	} catch (err) {

@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Testwork = require("../models/testwork");
 const TestAnswer = require("../models/testAnswer");
+const Notification = require("../models/notification");
 
 exports.saveAnswers = async (req, res, next) => {
 	try {
@@ -74,6 +75,17 @@ exports.saveAnswers = async (req, res, next) => {
 	  		});		
 	  		await answers.save();	
 		}
+
+		const notification = new Notification({
+			title: testwork.title,
+			description: "You've completed test",
+			user: req.userId,
+			type: "testanswer",
+			linkId: testwork._id,
+			courseId: testwork.course
+		});
+		await notification.save();
+
 		res.status(201).json(testAnswers);
 	}  catch (err) {
 		console.log(err);
@@ -135,7 +147,7 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 
 		let result = [];
 
-		for(student of students ) {
+		for(student of students) {
 			let studentsAnsw = answers.filter(a => a.student.toString() === student._id.toString());
 			let answersWithQuestions = [];
 			let sum = 0;
@@ -148,7 +160,7 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 
 				testwork.questions.forEach( question => {
   					let answ = studentsAnsw[0].answers.filter(a => a.question.toString() === question._id.toString());
-		  			answersWithQuestions.push({question: question, studentAnswer: answ[0].answer, points: answ[0].grade });
+		  			answersWithQuestions.push({question: question, studentAnswer: answ[0].answer || answ[0].answers, points: answ[0].grade });
 		  		});	
 
 				studentsAnsw[0].answers.forEach(answ => {
@@ -207,6 +219,16 @@ exports.updateAnswers = async (req, res, next) => {
 
 		await TestAnswer.updateOne({testwork: testId, student: student}, {$set: {answers: answers}});
 		const answer = await TestAnswer.findOne({testwork: testId, student: student});
+
+		const notification = new Notification({
+			title: testwork.title,
+			description: "Your test has been graded by" + testwork.course.creator,
+			user: student,
+			type: "testanswer",
+			linkId: testwork._id,
+			courseId: testwork.course
+		});
+		await notification.save();
 
 		res.status(200).json(answer);
 	}  catch (err) {

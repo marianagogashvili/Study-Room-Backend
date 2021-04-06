@@ -1,6 +1,6 @@
 const Article = require("../models/article");
 const Course = require("../models/course");
-
+const Notification = require("../models/notification");
 
 let checkCourseCreator = async (courseId, teacherId) => {
 	const course = await Course.findById(courseId);
@@ -12,6 +12,17 @@ let checkCourseCreator = async (courseId, teacherId) => {
 	}
 }
 
+exports.uploadFolder = async (req, res, next) => {
+	try {
+		console.log("reached");
+	} catch (err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+};
+
 exports.createArticle = async (req, res, next) => {
 	try {
 		const title = req.body.title;
@@ -20,7 +31,7 @@ exports.createArticle = async (req, res, next) => {
 		const courseId = req.body.courseId;
 
 		checkCourseCreator(courseId, req.userId);
-		
+
 		const article = new Article({
 			title: title,
 			text: text,
@@ -28,6 +39,16 @@ exports.createArticle = async (req, res, next) => {
 			course: courseId
 		});
 		await article.save();
+
+		const notification = new Notification({
+			title: article.title,
+			description: "You've created an article",
+			user: req.userId,
+			type: "article",
+			linkId: article._id,
+			courseId: courseId
+		});
+		await notification.save();
 
 		res.status(201).json(article);
 	} catch (err) {
@@ -93,6 +114,16 @@ exports.updateArticle = async (req, res, next) => {
 
 		await article.save();
 
+		const notification = new Notification({
+			title: article.title,
+			description: "You've updated an article",
+			user: req.userId,
+			type: "article",
+			linkId: article._id,
+			courseId: article.course
+		});
+		await notification.save();
+
 		res.status(201).json(article);
 	} catch (err) {
 		if (!err.statusCode) {
@@ -108,6 +139,8 @@ exports.deleteArticle = async (req, res, next) => {
 
 		const article = await Article.findById(articleId);
 		checkCourseCreator(article.course, req.userId);
+
+		await Notification.deleteMany({linkId: articleId});
 
 		await Article.deleteOne({_id: articleId});
 

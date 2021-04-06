@@ -7,26 +7,33 @@ const notificationSchema = new Schema({
 		required: true
 	},
 	title: {
-		type: String
+		type: String,
+		required: true
 	},
 	user: {
 		ref: 'Student',
-		type: Schema.Types.ObjectId
+		type: Schema.Types.ObjectId,
+		required: true
 	},
 	courseId: {
 		ref: 'Course',
 		type: Schema.Types.ObjectId
 	},
 	type: {
-		type: String,
-		required: true
+		type: String
 	},
 	linkId: {
 		type: Schema.Types.ObjectId
+	},
+	seen: {
+		type: Boolean,
+		default: false
+	},
+	createdAt: {
+		type: Date, 
+		expires: '7d',
+		default: Date.now
 	}
-}, {timestamps: true});
+});
  
 module.exports = mongoose.model('Notification', notificationSchema);
-
-// You've added assignment "firs tof the year"
-// 		  descr    type       title and link

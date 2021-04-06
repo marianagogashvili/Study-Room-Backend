@@ -40,7 +40,7 @@ exports.createPost = async (req, res, next) => {
 
 	const notification = new Notification({
 		title: post.title,
-		description: "created",
+		description: "You've added post",
 		user: req.userId,
 		type: "post",
 		linkId: post._id,
@@ -88,17 +88,9 @@ exports.deletePost = async (req, res, next) => {
 	if (post.fileUrl) {
 		fs.unlinkSync(post.fileUrl);
 	}
+	await Notification.deleteMany({linkId: postId});
 
 	await Post.deleteOne({_id: postId});
-
-	const notification = new Notification({
-		title: post.title,
-		description: "deleted",
-		user: req.userId,
-		type: "post",
-		courseId: post.course
-	});
-	await notification.save();
 
 	res.status(200).json({message: "Post deleted"});
 };
