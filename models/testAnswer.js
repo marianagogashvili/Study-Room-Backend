@@ -12,6 +12,10 @@ const testAnswerSchema = new Schema({
         ref: 'Testwork',
         required: true
 	},
+	grade: {
+		type: Number,
+		min: 0
+	},
 	answers: [
 		{
 			question: {

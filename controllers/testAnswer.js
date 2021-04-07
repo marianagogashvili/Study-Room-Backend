@@ -25,6 +25,7 @@ exports.saveAnswers = async (req, res, next) => {
 		await TestAnswer.updateOne({_id: testAnswers._id}, { $push: { answers: answersList } });
 		
 		const answers = await TestAnswer.findOne({_id: testAnswers._id});
+		let finalGrade = 0;
 
 		if (answers) {
 			testwork.questions.forEach( question => {
@@ -39,9 +40,7 @@ exports.saveAnswers = async (req, res, next) => {
 	  				} else {
 	  					answ[0].grade = 0;
 	  				}
-
 	  			} else if (question.autoCheck === true) {
-
 	  				if (answ[0].answer && answ[0].answer.toLowerCase().trim() === 
 	  					question.answer.toLowerCase().trim()) {
 						answ[0].grade = question.points;
@@ -70,11 +69,18 @@ exports.saveAnswers = async (req, res, next) => {
 	  				} else {
 	  					answ[0].grade = 0;
 	  				}
-
 	  			}
+	  			// console.log(answ[0].grade);
+
+	  			finalGrade += answ[0].grade ? answ[0].grade : 0;
+
 	  		});		
 	  		await answers.save();	
 		}
+
+		await TestAnswer.updateOne({_id: testAnswers._id}, { grade: finalGrade });
+		
+		console.log(finalGrade);
 
 		const notification = new Notification({
 			title: testwork.title,
@@ -111,15 +117,14 @@ exports.getAnswers = async (req, res, next) => {
 		}	
 
 		let result = [];
-
 		if (answers) {
 			testwork.questions.forEach( question => {
 	  			let answ = answers.answers.filter(a => a.question.toString() === question._id.toString());
-	
-	  			result.push({question: question, studentAnswer: answ[0].answer || answ[0].answers, points: answ[0].grade});
+				console.log(answ);
+	  			result.push({question: question, studentAnswer: answ[0].answer || answ[0].answers || null, points: answ[0].grade});
 	  		});		
 		}
-
+		
 		res.status(200).json(result);
 	}  catch (err) {
 		console.log(err);
@@ -137,7 +142,7 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 		const answers = await TestAnswer.find({testwork: testId});
 		const testwork = await Testwork.findById(testId).populate({path: 'course', populate: {path: 'students', populate: {path: 'group'}}});
 		const students = testwork.course.students;
-		
+
 		if ((testwork.course.creator.toString() !== req.userId)) {
 			const error = new Error();
 			error.statusCode = 403;
@@ -149,8 +154,9 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 
 		for(student of students) {
 			let studentsAnsw = answers.filter(a => a.student.toString() === student._id.toString());
+			console.log(studentsAnsw.grade);
+
 			let answersWithQuestions = [];
-			let sum = 0;
 			let gradedQuestions = 0;
 
 			let max = 0;
@@ -160,18 +166,13 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 
 				testwork.questions.forEach( question => {
   					let answ = studentsAnsw[0].answers.filter(a => a.question.toString() === question._id.toString());
-		  			answersWithQuestions.push({question: question, studentAnswer: answ[0].answer || answ[0].answers, points: answ[0].grade });
+		  			answersWithQuestions.push({question: question, studentAnswer: answ[0].answer, studentAnswers: answ[0].answers, points: answ[0].grade });
 		  		});	
-
-				studentsAnsw[0].answers.forEach(answ => {
-					if (answ.grade || answ.grade === 0) {
-						sum += answ.grade;
-						gradedQuestions += 1;
-					} 
-				});
+				
+				studentsAnsw[0].answers.forEach(answ => { gradedQuestions += (answ.grade || answ.grade === 0) ? 1 : 0 });
 
 			}
-		
+
 
 			result.push({
 				_id: student._id, 
@@ -179,7 +180,7 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 				fullName: student.fullName, 
 				group: student.group.name, 
 				answers: answersWithQuestions, 
-				sumPoints: studentsAnsw.length ? sum : null,
+				sumPoints: studentsAnsw[0] ? studentsAnsw[0].grade : null,
 				gradedQuestions: gradedQuestions ,
 				max: max,
 				createdAt: studentsAnsw.length > 0 ? studentsAnsw[0].createdAt : null });
@@ -207,6 +208,10 @@ exports.updateAnswers = async (req, res, next) => {
 		const testId = req.body.testId;
 		const student = req.body.student;
 		const answers = JSON.parse(req.body.answers);
+		console.log(answers);
+
+		let finalGrade = 0;
+		answers.forEach(val => finalGrade += val.grade);
 
 		const testwork = await Testwork.findById(testId).populate({ path: 'course' });
 		
@@ -217,7 +222,8 @@ exports.updateAnswers = async (req, res, next) => {
 			throw error;
 		}	
 
-		await TestAnswer.updateOne({testwork: testId, student: student}, {$set: {answers: answers}});
+		await TestAnswer.updateOne({testwork: testId, student: student}, {$set: {answers: answers, grade: finalGrade}});
+
 		const answer = await TestAnswer.findOne({testwork: testId, student: student});
 
 		const notification = new Notification({
