@@ -17,6 +17,7 @@ let checkCourseCreator = async (courseId, teacherId) => {
 
 exports.createPost = async (req, res, next) => {
 	const title = req.body.title;
+	const hidden = req.body.hidden;
 	const course = req.body.courseId;
 	const topic = req.body.topicId;
 
@@ -32,6 +33,7 @@ exports.createPost = async (req, res, next) => {
 	const post = new Post({
 		title: title,
 		course: course,
+		hidden: hidden,
 		topic: topic,
 		fileUrl: fileUrl,
 		link: link

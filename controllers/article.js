@@ -27,6 +27,7 @@ exports.createArticle = async (req, res, next) => {
 	try {
 		const title = req.body.title;
 		const text = req.body.text;
+		const hidden = req.body.hidden;
 		const topicId = req.body.topicId;
 		const courseId = req.body.courseId;
 
@@ -35,6 +36,7 @@ exports.createArticle = async (req, res, next) => {
 		const article = new Article({
 			title: title,
 			text: text,
+			hidden: hidden,
 			topic: topicId,
 			course: courseId
 		});
@@ -105,12 +107,14 @@ exports.updateArticle = async (req, res, next) => {
 		const articleId = req.body.id;
 		const title = req.body.title;
 		const text = req.body.text;
+		const hidden = req.body.hidden;
 
 		const article = await Article.findById(articleId);
 		checkCourseCreator(article.course, req.userId);
 
 		article.title = title;
 		article.text = text;
+		article.hidden = hidden;
 
 		await article.save();
 

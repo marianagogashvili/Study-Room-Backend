@@ -119,6 +119,9 @@ exports.getAnswers = async (req, res, next) => {
 		let result = [];
 		if (answers) {
 			testwork.questions.forEach( question => {
+				console.log(question);
+				console.log(answers.answers);
+
 	  			let answ = answers.answers.filter(a => a.question.toString() === question._id.toString());
 				console.log(answ);
 	  			result.push({question: question, studentAnswer: answ[0].answer || answ[0].answers || null, points: answ[0].grade});
@@ -154,7 +157,7 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 
 		for(student of students) {
 			let studentsAnsw = answers.filter(a => a.student.toString() === student._id.toString());
-			console.log(studentsAnsw.grade);
+			// console.log(studentsAnsw);
 
 			let answersWithQuestions = [];
 			let gradedQuestions = 0;
@@ -166,7 +169,8 @@ exports.getAnswersForTeacher = async (req, res, next) => {
 
 				testwork.questions.forEach( question => {
   					let answ = studentsAnsw[0].answers.filter(a => a.question.toString() === question._id.toString());
-		  			answersWithQuestions.push({question: question, studentAnswer: answ[0].answer, studentAnswers: answ[0].answers, points: answ[0].grade });
+
+		  			answersWithQuestions.push({question: question, studentAnswer: answ[0] ? answ[0].answer : null, studentAnswers: answ[0] ? answ[0].answers : null, points: answ[0] ? answ[0].grade : null });
 		  		});	
 				
 				studentsAnsw[0].answers.forEach(answ => { gradedQuestions += (answ.grade || answ.grade === 0) ? 1 : 0 });
@@ -213,9 +217,9 @@ exports.updateAnswers = async (req, res, next) => {
 		let finalGrade = 0;
 		answers.forEach(val => finalGrade += val.grade);
 
-		const testwork = await Testwork.findById(testId).populate({ path: 'course' });
+		const testwork = await Testwork.findById(testId).populate({ path: 'course', populate: {path: 'creator'} });
 		
-		if ((testwork.course.creator.toString() !== req.userId)) {
+		if ((testwork.course.creator._id.toString() !== req.userId)) {
 			const error = new Error();
 			error.statusCode = 403;
 			error.data  = "You are not allowed to do this";
@@ -228,7 +232,7 @@ exports.updateAnswers = async (req, res, next) => {
 
 		const notification = new Notification({
 			title: testwork.title,
-			description: "Your test has been graded by" + testwork.course.creator,
+			description: "Your test has been graded by " + testwork.course.creator.fullName,
 			user: student,
 			type: "testanswer",
 			linkId: testwork._id,

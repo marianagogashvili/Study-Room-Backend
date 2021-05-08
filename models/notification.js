@@ -31,7 +31,7 @@ const notificationSchema = new Schema({
 	},
 	createdAt: {
 		type: Date, 
-		expires: '7d',
+		expires: '24h',
 		default: Date.now
 	}
 });

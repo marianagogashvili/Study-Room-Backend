@@ -6,6 +6,7 @@ const Student = require('../models/student');
 const Teacher = require('../models/teacher');
 
 const router = express.Router();
+const isAuth = require('../middleware/is-auth');
 
 router.post('/register',
  [
@@ -42,6 +43,6 @@ router.post('/login', [
  ],
  authController.login);
 
-// router.post('/checkUser', isAuth, authController.checkUser);
+router.get('/getNotifications', isAuth, authController.getNotifications);
 
 module.exports = router;

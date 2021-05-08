@@ -21,6 +21,11 @@ const postSchema = new Schema({
 		type: Number,
 		default: 0
 	},
+	hidden: {
+		type: Boolean,
+		required: true,
+		default: false
+	},
 	topic: {
 		type: Schema.Types.ObjectId,
         ref: 'Topic',

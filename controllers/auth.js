@@ -6,6 +6,7 @@ const Mongoose = require('mongoose')
 const Student = require('../models/student');
 const Teacher = require('../models/teacher');
 const Group = require('../models/group');
+const Notification = require('../models/notification');
 
 exports.register = async (req, res, next) => {
 	try {
@@ -125,18 +126,17 @@ exports.login = async (req, res, next) => {
 	}
 }
 
-// exports.checkUser = async (req, res, next) => { 
-// 	const id = req.body.id;
+exports.getNotifications = async (req, res, next) => {
+	try {
+		const notifications = await Notification.find({user: req.userId});
 
-// 	let type = '';
-// 	const student = await Student.findById(Mongoose.Types.ObjectId(id));
-// 	const teacher = await Teacher.findById(Mongoose.Types.ObjectId(id));
+		res.status(200).json(notifications);
+	} catch(err) {
+		if (!err.statusCode) {
+	      err.statusCode = 500;
+	    }
+		next(err);
+	}
+}
 
-// 	if (student) {
-// 		res.status(200).json({ exists: true, type: 'student' });
-// 	} else if (teacher) {
-// 		res.status(200).json({ exists: true, type: 'teacher' });
-// 	} else {
-// 		res.status(200).json({ exists: false });		
-// 	}
-// }
+
