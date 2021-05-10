@@ -40,6 +40,8 @@ exports.createPost = async (req, res, next) => {
 	});
 	await post.save();
 
+	// add link and file
+
 	const notification = new Notification({
 		title: post.title,
 		description: "You've added post",
@@ -52,6 +54,50 @@ exports.createPost = async (req, res, next) => {
 
 	res.status(200).json(post);
 };
+
+exports.updatePost = async (req, res, next) => {
+	const title = req.body.title;
+	const hidden = req.body.hidden;
+	const id = req.body.id;
+
+	console.log(req.body);
+	const post = await Post.findById(id);
+
+	checkCourseCreator(post.course, req.userId);
+
+	const link = req.body.link === "undefined" ? null : req.body.link;
+
+	let fileUrl = null;
+
+	if (req.files[0]) {
+		fileUrl = req.files[0].path;
+	}
+
+	if ((req.files[0] || link) && post.fileUrl) {
+		fs.unlinkSync(post.fileUrl);
+	}
+
+	post.title = title;
+	post.hidden = hidden;
+	post.fileUrl = fileUrl;
+	post.link = link;
+
+	await post.save();
+
+	// add link and file
+
+	const notification = new Notification({
+		title: post.title,
+		description: "You've updated post",
+		user: req.userId,
+		type: "post",
+		linkId: post._id,
+		courseId: post.course
+	});
+	await notification.save();
+
+	res.status(200).json(post);
+}
 
 exports.addMargin = async (req, res, next) => {
 	try {

@@ -14,6 +14,10 @@ router.post('/createPost', [
 	body('title').trim().not().isEmpty()
 ], isAuthTeacher, postController.createPost);
 
+router.post('/updatePost', [
+	body('title').trim().not().isEmpty()
+], isAuthTeacher, postController.updatePost);
+
 router.post('/getPostsByCourse', isAuth, postController.getPostsByCourse);
 
 router.post('/addMargin', isAuth, postController.addMargin);
